@@ -1,0 +1,249 @@
+.result-container {
+  width: 100vw;
+  min-height: 100vh;
+  background-color: #f7f5ef;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+.result-header-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.result-main-title {
+  font-family: 'HoltwoodOneSC', serif; 
+  font-size: 40px;
+  font-weight: bold;
+  color: #1a1a1a;
+  letter-spacing: 1px;
+}
+
+.party-icon {
+  font-size: 24px;
+}
+
+.result-sub-title {
+  font-size: 20px;
+  color: #666;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
+
+.result-content-grid {
+  display: flex;
+  gap: 30px;
+  max-width: 1000px;
+  width: 100%;
+  justify-content: center;
+  align-items: stretch;
+  margin-top: 40px;
+}
+
+.result-card {
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.result-left-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+}
+
+.result-moca-wrapper {
+  position: absolute;
+  top: -65px;
+  left: 20px;
+  width: 140px;
+  z-index: 2;
+}
+
+.result-moca-img {
+  width: 200%;
+  height: auto;
+}
+
+.profile-card {
+  margin-top: 154px;
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #222;
+  margin-bottom: 20px;
+}
+
+.profile-list, .recommend-reasons {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.profile-list li, .recommend-reasons li {
+  font-size: 18px;
+  color: #444;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkbox-icon {
+  color: #8c7355;
+  font-weight: bold;
+}
+
+.match-label {
+  font-size: 13px;
+  color: #777;
+}
+
+.match-percent {
+  font-size: 36px;
+  font-weight: bold;
+  color: #5c4033;
+}
+
+.heart-btn {
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-top: 10px;
+}
+
+.product-img-wrapper {
+  width: 130px;
+}
+
+.recommend-bag-img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.result-footer-btn-area {
+  margin-top: 40px;
+}
+
+.goto-lounge-btn {
+  background-color: #b59f83;
+  color: white;
+  border: none;
+  padding: 16px 40px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  box-shadow: 0 4px 12px rgba(181, 159, 131, 0.3);
+}
+
+.goto-lounge-btn:hover {
+  background-color: #9e886d;
+}
+
+.recommend-product-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 30px;
+  background-color: transparent;
+  border-radius: 16px; 
+  padding: 15px; 
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.clickable-bag-area:hover {
+  transform: translateY(-6px); 
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18); 
+  background-color: rgba(255, 255, 255, 0.5); 
+}
+
+.clickable-bag-area:hover .recommend-bag-img {
+  transform: scale(1.06); 
+}
+
+.recommend-bag-img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.match-circle-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.match-score-circle {
+  width: 170px;
+  height: 170px;
+  background-color: #f3efe6;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.match-label {
+  font-size: 14px;
+  color: #777;
+  margin-bottom: 4px;
+}
+
+.match-percent {
+  font-size: 38px;
+  font-weight: bold;
+  color: #5c4033;
+}
+
+.heart-btn-floating {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.heart-btn-floating:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+.product-img-wrapper {
+  width: 170px;
+}

@@ -1,0 +1,72 @@
+.visit-pass-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+
+.visit-pass-container .lounge-logo {
+  position: absolute;
+  top: 40px;
+  left: 60px;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.visit-pass-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 900px;
+  width: 100%;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.pass-ready-title {
+  font-family: 'HoltwoodOneSC', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  text-align: left;
+  width: 100%;
+  max-width: 820px;
+}
+
+.ticket-img-wrapper {
+  width: 100%;
+  max-width: 820px;
+  display: flex;
+  justify-content: center;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ticket-img-wrapper img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.pass-guide-text {
+  font-family: 'HindSiliguri', sans-serif;
+  margin-top: 10px;
+  font-size: 18px;
+  color: #333;
+  font-weight: 500;
+  text-align: left;
+  max-width: 820px;
+  letter-spacing: -0.5px;
+}
