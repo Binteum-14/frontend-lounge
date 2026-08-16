@@ -1,0 +1,893 @@
+.owner-lounge-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.bottom-interaction-area {
+  position: absolute;
+  bottom: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1100px;
+  height: 130px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.chat-input-bar {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  background: #f8f6f2;
+  width: 75%;
+  max-width: 720px;
+  height: 58px;
+  padding: 0 20px;
+  border-radius: 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  margin-bottom: 15px;
+}
+
+.chat-input-bar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 0 15px;
+  font-size: 1.05rem;
+  color: #333;
+}
+
+.attach-btn {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: #555;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.send-btn {
+  background: #000;
+  border: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.send-btn:hover {
+  transform: scale(1.05);
+}
+
+
+.passport-wrapper {
+  position: absolute;
+  right: 60px; 
+  bottom: -115px;
+  z-index: 10;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.passport-img {
+  width: 260px; 
+  height: auto;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.35));
+}
+
+.passport-wrapper:hover {
+  transform: translateY(-8px) scale(1.02);
+}
+
+.passport-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.passport-modal-content {
+  background: #fff;
+  padding: 40px;
+  border-radius: 20px;
+}
+
+.chat-messages-container {
+  position: absolute;
+  top: 130px;
+  bottom: 110px;
+  width: 100%;
+  max-width: 720px;
+  left: 50%;
+  transform: translateX(-50%);
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 5;
+}
+
+.chat-messages-container::-webkit-scrollbar {
+  display: none;
+}
+
+.message-bubble {
+  max-width: 70%;
+  padding: 12px 18px;
+  border-radius: 20px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.message-bubble.bot {
+  align-self: flex-start;
+  background-color: rgba(255, 255, 255, 0.85);
+  color: #222;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.message-bubble.user {
+  align-self: flex-end;
+  background-color: #222;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.95rem;
+  padding: 0 12px;
+  color: #333;
+}
+
+.plus-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.send-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: #111;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.send-btn:hover {
+  background-color: #333;
+}
+
+.message-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.message-row.bot {
+  align-items: flex-start;
+}
+
+.message-row.user {
+  align-items: flex-end;
+}
+
+.bot-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.bot-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: #fff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bot-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bot-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #111111;
+  letter-spacing: -0.3px;
+}
+
+.message-bubble {
+  max-width: 80%;
+  padding: 20px 24px;
+  border-radius: 30px; 
+  font-size: 1.02rem;
+  line-height: 1.6;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.message-bubble.bot {
+  background-color: rgba(247, 245, 239, 0.95);
+  color: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.message-text {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.message-bubble.user {
+  background-color: #222222;
+  color: #ffffff;
+}
+
+.options-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.option-btn {
+  padding: 12px 24px;
+  border-radius: 50px;
+  background-color: rgba(245, 243, 239, 0.95);
+  border: 1px solid rgba(220, 215, 205, 0.8);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #222222;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease-in-out;
+}
+
+.option-btn:hover {
+  background-color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  border-color: #cccccc;
+}
+
+.passport-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px); 
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.passport-book-container {
+  position: relative;
+  width: 1040px;             
+  min-width: 1040px;
+  height: 700px;             
+  min-height: 700px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: transparent; 
+  border-radius: 12px;
+  box-shadow: none;
+  display: flex;
+  box-sizing: border-box;
+  overflow: hidden;
+  animation: passportAppear 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes passportAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.passport-left-page {
+  width: 50%;
+  height: 100%;
+  padding: 65px 35px 40px 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  box-sizing: border-box;
+}
+
+.passport-right-page {
+  width: 50%;
+  height: 100%;
+  padding: 65px 35px 40px 120px;
+  box-sizing: border-box;
+}
+
+.user-account-section {
+  margin-bottom: 20px;
+}
+
+.label-name {
+  font-size: 0.85rem;
+  color: #76705c;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.user-name {
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin: 0 0 12px 0;
+}
+
+.account-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.account-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.85rem;
+  color: #6e644b;
+  cursor: pointer;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.account-btn.danger {
+  color: #7a3e3e;
+}
+
+.account-btn:hover {
+  text-decoration: underline;
+}
+
+.visit-pass-title {
+  font-family: 'HoltwoodOneSC', Impact, sans-serif;
+  font-size: 1.35rem;
+  letter-spacing: 0.5px;
+  color: #111;
+  margin: 20px 0 14px 0;
+}
+
+.kraft-ticket-card {
+  position: relative;
+  background-color: #cbb592; 
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.kraft-ticket-card::before,
+.kraft-ticket-card::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 22px;
+  background-color: #f5efe3;
+}
+
+.kraft-ticket-card::before {
+  left: -1px;
+  border-radius: 0 12px 12px 0;
+}
+
+.kraft-ticket-card::after {
+  right: -1px;
+  border-radius: 12px 0 0 12px;
+}
+
+.ticket-left-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ticket-brand {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #222;
+  margin-bottom: 2px;
+}
+
+.ticket-field {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.field-label {
+  font-size: 0.72rem;
+  color: #6d6452;
+  width: 55px;
+}
+
+.field-value {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.ticket-qr-area img {
+  width: 70px;
+  height: 70px;
+  background-color: #ffffff;
+  padding: 4px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  display: block;
+}
+
+.img-ticket-card {
+  position: relative;
+  width: 340px;              
+  height: 155px;              
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.15));
+  margin-top: 5px;
+}
+
+.ticket-overlay-field {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ticket-label {
+  font-size: 0.75rem;
+  color: #726754;
+  font-weight: 500;
+}
+
+.ticket-val {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.passenger-field {
+  top: 62px;
+  left: 100px;
+}
+
+.issued-field {
+  top: 102px;
+  left: 100px;
+}
+
+.ticket-overlay-qr {
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  transform: translateY(-50%);
+}
+
+.ticket-overlay-qr img {
+  width: 62px;
+  height: 62px;
+  display: block;
+  border-radius: 4px;
+}
+
+.pass-detail-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100; 
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.img-ticket-card.clickable {
+  cursor: pointer;
+  transition: transform 0.2s, filter 0.2s;
+}
+
+.img-ticket-card.clickable:hover {
+  transform: translateY(-2px);
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
+}
+
+.pass-detail-modal {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+}
+
+.enlarged-ticket {
+  transform: scale(1.25); 
+  transform-origin: center;
+  cursor: default;
+}
+
+.pass-detail-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 200px;
+}
+
+.detail-action-btn {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 30px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.detail-action-btn.primary {
+  background-color: #ffffff;
+  color: #726247;
+  border: 1.5px solid #d4c8b5;
+}
+
+.detail-action-btn.primary:hover {
+  background-color: #fcfbf9;
+  border-color: #b8a992;
+}
+
+.detail-action-btn.secondary {
+  background-color: #e5dac9;
+  color: #6e5e46;
+  border: none;
+}
+
+.detail-action-btn.secondary:hover {
+  background-color: #daccb8;
+}
+
+.passport-right-page {
+  width: 50%;
+  height: 100%;
+  padding: 65px 40px 40px 10px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.study-cards-title {
+  font-family: 'HoltwoodOneSC', Impact, sans-serif;
+  font-size: 1.35rem;
+  font-weight: normal;
+  color: #111;
+  margin: 0 0 14px 20px;
+  letter-spacing: 0.5px;
+}
+
+.study-cards-scroll-container {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-right: 6px;
+  align-items: flex-start; 
+}
+
+.study-cards-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+.study-cards-scroll-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 10px;
+}
+.study-cards-scroll-container::-webkit-scrollbar-thumb {
+  background: #d4c8b5;
+  border-radius: 10px;
+}
+
+.study-card-item {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  background-size: contain;         
+  background-position: center;      
+  background-repeat: no-repeat;
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+
+.sc-data-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.sc-group {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+}
+
+.sc-label {
+  font-size: 0.55rem;
+  color: #8c7a60; 
+  font-weight: 600;
+  margin-bottom: 1px;
+}
+
+.sc-val {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #333333;
+}
+
+.sc-duration-group {
+  left: 32%; 
+  bottom: 18%;
+}
+
+.sc-location-group {
+  left: 52%;
+  bottom: 18%;
+}
+
+.sc-val-from {
+  position: absolute;
+  left: 71.5%; 
+  top: 36%;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #8c6d53;
+}
+
+.sc-val-to {
+  position: absolute;
+  left: 82%; 
+  top: 36%;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #8c6d53;
+}
+
+.sc-flight-group {
+  left: 71.5%;
+  bottom: 24%;
+}
+
+.sc-date-group {
+  left: 71.5%;
+  bottom: 7%;
+}
+
+.sc-val-flight {
+  font-size: 0.55rem;
+  font-weight: 500;
+  color: #333333;
+}
+
+.sc-val-date {
+  font-size: 0.55rem;
+  font-weight: 500;
+  color: #333333;
+}
+
+.lounge-back-btn {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: rgba(255, 255, 255, 0.85);
+  border: 1px solid #d4c8b5;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #333333;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.lounge-back-btn:hover {
+  background-color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.enlarged-ticket .sc-duration-group {
+  position: absolute;
+  left: 28%;
+  bottom: 18%;
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+
+.enlarged-ticket .sc-location-group {
+  position: absolute;
+  left: 48%;
+  bottom: 18%;
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+
+.enlarged-ticket .sc-duration-group .ticket-label,
+.enlarged-ticket .sc-location-group .ticket-label {
+  font-size: 0.5rem;
+  color: #8c7a60;
+  font-weight: 600;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.enlarged-ticket .sc-group .ticket-val {
+  font-size: 0.65rem;       
+  font-weight: 400;         
+  color: #333333;
+  white-space: nowrap;
+  letter-spacing: -0.02em;  
+}
+
+.enlarged-ticket .sc-duration-group .ticket-val,
+.enlarged-ticket .sc-location-group .ticket-val {
+  font-size: 0.65rem !important;
+  font-weight: 400 !important;
+}
+
+.enlarged-ticket .ticket-overlay-field.sc-val-from {
+  position: absolute;
+  left: 77%; 
+  top: 36%;
+}
+.enlarged-ticket .ticket-overlay-field.sc-val-from .ticket-val {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #8c6d53;
+}
+
+.enlarged-ticket .ticket-overlay-field.sc-val-to {
+  position: absolute;
+  left: 89%; 
+  top: 36%;
+}
+.enlarged-ticket .ticket-overlay-field.sc-val-to .ticket-val {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #8c6d53;
+}
+
+.enlarged-ticket .sc-flight-group {
+  position: absolute;
+  left: 77%;
+  bottom: 32%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.enlarged-ticket .sc-flight-group .ticket-label {
+  font-size: 0.5rem;
+  color: #8c7a60;
+  font-weight: 600;
+  margin-bottom: -14px;
+  display: block;
+}
+
+.enlarged-ticket .sc-flight-group .ticket-val {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #333333;
+}
+
+.enlarged-ticket .sc-date-group {
+  position: absolute;
+  left: 77%;
+  bottom: 18%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.enlarged-ticket .sc-date-group .ticket-label {
+  font-size: 0.5rem;
+  color: #8c7a60;
+  font-weight: 600;
+  margin-bottom: -14px;
+  display: block;
+}
+
+.enlarged-ticket .sc-date-group .ticket-val {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #333333;
+}
