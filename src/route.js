@@ -37,7 +37,7 @@ function Route() {
     const [totalFocusSeconds, setTotalFocusSeconds] = useState(0);
 
     const [isPaused, setIsPaused] = useState(false);
-    const [pausedSeconds, setPausedSeconds] = useState(0);
+    const pausedSecondsRef = useRef(0);
 
     const [musicOn, setMusicOn] = useState(true);
 
@@ -157,7 +157,7 @@ function Route() {
                 setRemainingSeconds(0);
 
                 setIsPaused(false);
-                setPausedSeconds(0);
+                pausedSecondsRef.current = 0;
 
                 /* 현재 보고 있던 페이지 저장 */
                 setSuccessPage(page);
@@ -265,7 +265,7 @@ function Route() {
         setTotalFocusSeconds(totalSeconds);
 
         setIsPaused(false);
-        setPausedSeconds(0);
+        pausedSecondsRef.current = 0;
 
         /* 새로운 타이머 시작하면 성공창 닫기 */
         setShowSuccessModal(false);
@@ -279,10 +279,6 @@ function Route() {
         );
     };
 
-    /* =========================================
-       일시정지 / 다시 시작
-    ========================================= */
-
     const togglePause = () => {
         ensureMusicPlaying();
 
@@ -291,9 +287,8 @@ function Route() {
         }
 
         if (!isPaused) {
-            setPausedSeconds(
-                remainingSeconds
-            );
+            pausedSecondsRef.current =
+                remainingSeconds;
 
             setIsPaused(true);
 
@@ -301,16 +296,19 @@ function Route() {
                 TIMER_STORAGE_KEY
             );
         } else {
+            const resumeSeconds =
+                pausedSecondsRef.current;
+
+            if (resumeSeconds <= 0) {
+                return;
+            }
+
             const nextEndTimeMs =
                 Date.now() +
-                pausedSeconds * 1000;
+                resumeSeconds * 1000;
 
             setEndTimeMs(nextEndTimeMs);
-
-            setRemainingSeconds(
-                pausedSeconds
-            );
-
+            setRemainingSeconds(resumeSeconds);
             setIsPaused(false);
 
             localStorage.setItem(
@@ -451,6 +449,10 @@ function Route() {
 
         if (successPage === "mcm") {
             return "mcmLounge";
+        }
+
+        if (successPage === "takeoff") {
+            return "비행기";
         }
 
         return "";
