@@ -25,6 +25,10 @@ function Home() {
     navigate('/mcm-check');
   };
 
+  const handleGoToFocusLounge = () => {
+    navigate('/focus-lounge');
+  };
+
   return (
     <div 
       className="home-container" 
@@ -46,7 +50,11 @@ function Home() {
             <span>MCM Check</span>
           </button>
           
-          <button className="menu-btn" type="button">
+          <button
+            className="menu-btn"
+            type="button"
+            onClick={handleGoToFocusLounge}
+          >
             <Coffee className="btn-icon" size={20} />
             <span>Focus Lounge</span>
           </button>

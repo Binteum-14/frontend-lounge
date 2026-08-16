@@ -1,0 +1,562 @@
+html,
+body,
+#root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+
+.focus-lounge-page-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+
+.focus-lounge-page {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
+.focus-lounge-next-button {
+    position: fixed;
+    right: 80px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    z-index: 10;
+}
+
+
+.focus-lounge-next-button-image {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.focus-center-timer-box {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 240px;
+    padding: 18px 24px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.84);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+    text-align: center;
+    z-index: 20;
+}
+
+.focus-center-timer-label {
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #5d4d43;
+}
+
+.focus-center-timer-value {
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #2b1f1a;
+}
+
+.focus-lounge-prev-button {
+    position: fixed;
+    left: 80px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    z-index: 10;
+}
+
+
+.focus-lounge-prev-button-image {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+
+/* 팝업 배경 */
+
+.focus-modal-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+
+/* 첫 번째 팝업 */
+
+.focus-setting-modal {
+    width: 550px;
+    box-sizing: border-box;
+    padding: 45px 45px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.12);
+    font-family: inherit;
+}
+
+/* 목표 시간 */
+.focus-modal-title {
+    margin: 0 0 20px 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #2B1F1A;
+    font-family: inherit;
+}
+
+/* Focus time */
+.focus-time-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 25px;
+}
+
+.focus-time-label {
+    font-size: 18px;
+    color: #2B1F1A;
+}
+
+.focus-time-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.focus-time-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* + / - 버튼 */
+.focus-time-button {
+    width: 30px;
+    height: 20px;
+    padding: 0;
+    border: 1.5px solid #dddddd;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #333333;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.focus-time-button:hover {
+    background: #f8f8f8;
+}
+
+/* 시간 숫자 */
+.focus-time-value {
+    min-width: 52px;
+    font-size: 20px;
+    color: #2B1F1A;
+}
+
+.focus-time-unit {
+    margin-left: 5px;
+    font-size: 14px;
+    color: #2B1F1A;
+}
+
+/* 구분선 */
+.focus-modal-divider {
+    width: 100%;
+    height: 1px;
+    margin: 7px 0 31px;
+    background: #d6d0cc;
+}
+
+
+/* 장소 선택 */
+.focus-place-title {
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: 600;
+    color: #2B1F1A;
+}
+
+.focus-place-buttons {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 35px;
+}
+
+.focus-place-button {
+    flex: 1;
+    height: 65px;
+    border-radius: 15px;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    transition:
+        border 0.15s ease,
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+/* 선택된 장소 */
+
+.focus-place-button.selected {
+    background: #FBF8F6;
+    border: 1.5px solid #b1855d;
+    color: #302a27;
+}
+
+
+/* 선택되지 않은 장소 */
+.focus-place-button.unselected {
+    background: #f5f5f5;
+    border: 1.5px solid transparent;
+    color: #aaaaaa;
+}
+
+
+.focus-place-icon {
+    font-size: 24px;
+    line-height: 1;
+}
+
+
+/* 비행기 선택 시 설명 */
+.focus-flight-note {
+    margin: -5px 3px 10px;
+    font-size: 12px;
+    color: #605a57;
+}
+
+
+/* 첫 번째 팝업 하단 버튼 */
+.focus-modal-main-button {
+    width: 100%;
+    height: 60px;
+    border: none;
+    border-radius: 15px;
+    background: #b3885d;
+    color: #ffffff;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.focus-modal-main-button:hover {
+    background: #a77c53;
+}
+
+/* 실시간 항공편 추천 팝업 */
+.focus-flight-modal {
+    width: 550px;
+    height: 750px;
+    box-sizing: border-box;
+    padding: 25px 45px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    font-family: inherit;
+}
+
+
+/* 항공편 추천 화면에만 있는 뒤로가기 버튼 */
+.focus-modal-back-button {
+    align-self: flex-start;
+    border: none;
+    background: transparent;
+    padding: 0;
+    margin: 0 0 5px 0;
+    cursor: pointer;
+    font-size: 38px;
+    font-weight: 100;
+    line-height: 1;
+    color: #89543f;
+}
+
+/* 제목 */
+.focus-flight-title {
+    margin: 10px 0 17px;
+    font-size: 24px;
+    font-weight: 600;
+    color: #211d1b;
+}
+
+/* 날짜 / 시간 정보 */
+.focus-flight-info-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #996a51;
+}
+
+.focus-flight-info-gap {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 5px;
+}
+
+.book-image {
+    display: block;
+    transform: translateY(2px);
+}
+
+/* 항공편 화면 구분선 */
+.focus-flight-divider {
+    height: 1.5px;
+    margin-top: 5px;
+    margin-bottom: 20px;
+    background: #aaaaaa;
+}
+
+/* 항공편 리스트 */
+.focus-flight-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 15px;
+}
+
+/* 스크롤바 */
+.focus-flight-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.focus-flight-list::-webkit-scrollbar-track {
+    background: #D9D9D9;
+    border-radius: 15px;
+}
+
+.focus-flight-list::-webkit-scrollbar-thumb {
+    background: #b3885d;
+    border-radius: 15px;
+}
+
+/* 항공편 카드 */
+.focus-flight-card {
+    height: 110px;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    align-items: start;
+    margin-bottom: 10px;
+    padding: 15px 20px;
+    border: 1px solid #d4d4d4;
+    border-radius: 15px;
+    background: #ffffff;
+    cursor: pointer;
+    transition:
+        border 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.focus-flight-card.selected {
+    border: 1.5px solid #b3885d;
+}
+
+.focus-flight-card:hover {
+    box-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+
+/* 항공사 영역 */
+.focus-flight-left-area {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+}
+
+.focus-flight-airline-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+/* 임시 항공사 로고 */
+.focus-airline-logo {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+
+    box-sizing: border-box;
+
+    border: 3px solid #172283;
+    border-radius: 50%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    margin-top: 2px;
+
+    color: #172283;
+
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.focus-flight-number {
+    font-size: 18px;
+    line-height: 20px;
+    color: #1e1d1c;
+}
+
+.focus-airline-name {
+    font-size: 14px;
+    color: #555555;
+}
+
+.focus-flight-duration {
+    margin-top: auto;
+    padding-bottom: 15px;
+    font-size: 14px;
+    color: #444444;
+}
+
+/* 출발 / 도착 */
+.focus-flight-route {
+    display: grid;
+    grid-template-columns: 70px 1fr 78px;
+    align-items: center;
+    align-self: start;
+    text-align: center;
+}
+
+.focus-airport-code {
+    font-size: 18px;
+    font-weight: 500;
+    color: #202020;
+}
+
+.focus-airport-name {
+    margin-top: 5px;
+    font-size: 14px;
+    color: #202020;
+}
+
+.focus-airport-time {
+    margin-top: 5px;
+    font-size: 12px;
+    color: #222222;
+}
+
+/* 비행기 아이콘 */
+.focus-plane-area {
+    font-size: 16px;
+    color: #555555;
+}
+
+.focus-plane-icon {
+    line-height: 1;
+}
+
+.focus-plane-line {
+    position: relative;
+    width: 100%;
+    height: 2px;
+    margin-top: 10px;
+    background: #777777;
+}
+
+.focus-plane-line::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: -1px;
+    transform: translateY(-50%);
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-left: 6px solid #777777;
+}
+
+.focus-plane-direct {
+    margin-top: 5px;
+    font-size: 14px;
+    color: #555555;
+}
+
+
+/* 항공편 선택 버튼 */
+.focus-flight-select-button {
+    width: 100%;
+    height: 60px;
+    flex-shrink: 0;
+    margin-top: 25px;
+    border: none;
+    border-radius: 15px;
+    background: #b3885d;
+    color: #ffffff;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.focus-flight-select-button:hover {
+    background: #a77c53;
+}
+
+.focus-place-image {
+    width: 24px;
+    height: 24px;
+}
+
+.focus-flight-info-row .focus-flight-clock-icon {
+    position: relative;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 1.8px solid #996a51;
+    border-radius: 50%;
+    color: #996a51;
+}
+
+.focus-flight-info-row .focus-flight-clock-icon::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 7px;
+    width: 1.8px;
+    height: 5px;
+    background: #996a51;
+    border-radius: 1px;
+}
+
+.focus-flight-info-row .focus-flight-clock-icon::after {
+    content: "";
+    position: absolute;
+    top: 7px;
+    left: 7px;
+    width: 4px;
+    height: 1.8px;
+    background: #996a51;
+    border-radius: 1px;
+}

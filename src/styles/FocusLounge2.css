@@ -1,0 +1,63 @@
+.focus-lounge-container {
+  position: relative;
+  width: 100%;
+}
+
+/* mp4는 overlay 뒤에 깔기 */
+.focus-lounge-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* 이 이미지가 실제 페이지 높이를 결정 */
+.focus-lounge-overlay {
+  position: relative;
+
+  width: 100%;
+  height: auto;
+
+  display: block;
+  z-index: 1;
+}
+
+.focus-lounge-blur {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: block;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.focus-lounge-button {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.focus-lounge-button-left {
+  left: 80px;
+}
+
+.focus-lounge-button-right {
+  right: 80px;
+}
+
+.focus-lounge-button-image {
+  display: block;
+  width: 100%;
+  height: auto;
+}

@@ -1,0 +1,872 @@
+.lounge-route {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+}
+
+.lounge-route-audio {
+    display: none;
+}
+
+.lounge-page-container {
+    position: relative;
+    width: 100%;
+}
+
+.lounge-people {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 10000;
+    height: 45px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-sizing: border-box;
+    background: rgba(
+        255,
+        255,
+        255,
+        0.95
+    );
+    border: 2px solid #B07A4F;
+    border-radius: 30px;
+    color: #B07A4F;
+}
+
+.lounge-people-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+}
+
+.lounge-people-title {
+    font-size: 16px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.lounge-people-divider {
+    width: 1.5px;
+    height: 20px;
+    background-color: #B07A4F;
+}
+
+.lounge-people-count {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.lounge-people-number {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.lounge-people-text {
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.lounge-timer {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(
+        -50%,
+        -50%
+    );
+
+    z-index: 9999;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+
+    pointer-events: none;
+}
+
+.lounge-timer-header {
+    display: flex;
+    align-items: center;
+
+    justify-content: center;
+
+    margin-bottom: 15px;
+}
+
+
+.lounge-timer-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #111;
+}
+
+
+/* 상태 점 */
+
+.lounge-timer-status {
+    margin-left: 22px;
+    font-size: 18px;
+}
+
+
+/* 실행 상태 점 */
+
+.lounge-timer-status-running {
+    color: #000;
+}
+
+
+/* 정지 상태 점 */
+
+.lounge-timer-status-paused {
+    opacity: 0.5;
+}
+
+.lounge-timer-time {
+    font-size: 130px;
+    line-height: 1;
+    font-weight: 900;
+    color: #000;
+    letter-spacing: -4px;
+    font-variant-numeric:
+        tabular-nums;
+    white-space: nowrap;
+    font-family: Holtwood One SC, serif;
+}
+
+.lounge-timer-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 30px;
+    gap: 20px;
+    pointer-events: auto;
+}
+
+.lounge-control-button {
+    width: 220px;
+    height: 45px;
+    padding: 0 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border: 2px solid #B07A4F;
+    border-radius: 30px;
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.95
+        );
+    color: #B07A4F;
+    font-family: inherit;
+    font-size: 16px;
+    cursor: pointer;
+    transition:
+        transform 0.15s ease,
+        background-color 0.15s ease,
+        opacity 0.15s ease;
+}
+
+.lounge-control-button:hover {
+    transform: translateY(-2px);
+}
+
+
+.lounge-control-button:active {
+    transform: translateY(0);
+}
+
+.lounge-music-button {
+    gap: 10px;
+}
+
+.lounge-music-button-off {
+    opacity: 0.65;
+}
+
+
+.lounge-music-note-icon {
+    font-size: 20px;
+}
+
+.lounge-music-label {
+    white-space: nowrap;
+}
+
+
+.lounge-control-divider {
+    width: 1px;
+    height: 22px;
+
+    margin: 0 5px;
+
+    background-color: #d7b995;
+}
+
+
+.lounge-volume-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    display: block;
+    position: relative;
+    bottom: 2px;
+}
+
+
+.lounge-music-state {
+    min-width: 30px;
+
+    font-size: 15px;
+
+    white-space: nowrap;
+}
+
+
+.lounge-pause-button {
+    gap: 12px;
+}
+
+
+.lounge-pause-icon {
+    min-width: 20px;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+
+.lounge-pause-text {
+    white-space: nowrap;
+
+    font-size: 16px;
+}
+
+.lounge-wallet-wrapper {
+    position: fixed;
+
+    right: 300px;
+    bottom: 45px;
+
+    z-index: 500;
+
+    margin: 0;
+    padding: 0;
+
+    border: none;
+    background: transparent;
+
+    cursor: pointer;
+}
+
+.lounge-wallet-image {
+    display: block;
+
+    width: 200px;
+    height: auto;
+
+    object-fit: contain;
+
+    pointer-events: none;
+}
+
+.lounge-product-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 30000;
+    background: rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 10px;
+    box-sizing: border-box;
+}
+
+.lounge-product-modal {
+    position: relative;
+    bottom: -100px;
+    width: 400px;
+    min-height: 500px;
+    padding: 20px 20px 10px;
+    box-sizing: border-box;
+    background: #ffffff;
+    border: 1.5px solid #9b674e;
+    border-radius: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.lounge-product-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    border: none;
+    background: transparent;
+    font-size: 32px;
+    font-weight: 200;
+    cursor: pointer;
+    color: #834333;
+}
+
+.lounge-product-modal-image {
+    width: 280px;
+    height: 250px;
+    object-fit: contain;
+    margin-top: 5px;
+}
+
+.lounge-product-modal-name {
+    width: 100%;
+    margin-top: 10px;
+    font-size: 22px;
+    font-weight: 500;
+    text-align: center;
+    color: #111;
+}
+
+.lounge-product-modal-price {
+    width: 100%;
+    margin-top: 10px;
+    font-size: 24px;
+    text-align: center;
+    color: #111;
+}
+
+.lounge-product-modal-description {
+    width: 100%;
+    margin-top: 35px;
+    margin-bottom: 20px;
+    padding-left: 5px;
+    box-sizing: border-box;
+    font-size: 20px;
+    color: #111;
+}
+
+.lounge-product-modal-button {
+    width: 100%;
+    height: 60px;
+    margin-bottom: 15px;
+    padding: 0 15px 0 25px;
+    border: none;
+    border-radius: 10px;
+    background: #D9B894;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 18px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* =========================================
+   주문 전 drink.png
+========================================= */
+
+.lounge-drink-button {
+    position: fixed;
+
+    margin: 0;
+    padding: 0;
+
+    border: none;
+    background: transparent;
+
+    cursor: pointer;
+
+    z-index: 500;
+}
+
+.lounge-drink-image {
+    display: block;
+    width: 140px;
+    height: auto;
+    object-fit: contain;
+
+    pointer-events: none;
+}
+
+
+/* Focus Lounge 1 */
+.lounge-drink-button-focus1 {
+    left: 18%;
+    bottom: 5%;
+}
+
+
+/* Focus Lounge 2 */
+.lounge-drink-button-focus2 {
+    left: 18%;
+    bottom: 5%;
+}
+
+
+/* MCM Lounge */
+.lounge-drink-button-mcm {
+    left: 18%;
+    bottom: 5%;
+}
+
+.lounge-drink-modal-overlay {
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    /* 지갑보다 위 */
+    z-index: 20000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255, 255, 255, 0.55);
+
+    /* 지갑 포함 뒤에 있는 모든 요소 흐리게 */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.lounge-ordered-drink {
+    position: fixed;
+    z-index: 9998;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+
+    cursor: pointer;
+}
+
+.lounge-ordered-drink-image {
+    display: block;
+
+    width: 290px;
+    height: auto;
+    object-fit: contain;
+
+    pointer-events: none;
+}
+.lounge-ordered-drink-focus1 {
+    left: 15%;
+    bottom: 3%;
+}
+
+
+/* =========================================
+   Focus Lounge 2 주문 음료 위치
+========================================= */
+
+.lounge-ordered-drink-focus2 {
+    left: 15%;
+    bottom: 3%;
+}
+
+
+/* =========================================
+   MCM Lounge 주문 음료 위치
+========================================= */
+
+.lounge-ordered-drink-mcm {
+    left: 15%;
+    bottom: 3%;
+}
+
+
+@media (
+    max-width: 900px
+) {
+
+    .lounge-timer-time {
+        font-size: 80px;
+    }
+
+    .lounge-control-button {
+        width: 190px;
+    }
+}
+
+
+@media (
+    max-width: 600px
+) {
+
+    .lounge-people {
+        top: 12px;
+        left: 12px;
+
+        height: 42px;
+
+        padding: 0 16px;
+
+        gap: 10px;
+    }
+
+    .lounge-people-title {
+        font-size: 14px;
+    }
+
+    .lounge-people-number,
+    .lounge-people-text {
+        font-size: 12px;
+    }
+
+    .lounge-timer-title {
+        font-size: 20px;
+    }
+
+    .lounge-timer-time {
+        font-size: 55px;
+
+        letter-spacing: -2px;
+    }
+
+    .lounge-timer-controls {
+        gap: 10px;
+
+        margin-top: 24px;
+    }
+
+    .lounge-control-button {
+        width: 155px;
+        height: 46px;
+
+        padding: 0 14px;
+
+        font-size: 13px;
+    }
+
+    .lounge-music-label,
+    .lounge-pause-text {
+        font-size: 13px;
+    }
+}
+
+/* =========================================
+   타이머 완료 SUCCESS 화면
+========================================= */
+
+.lounge-success-overlay {
+    position: fixed;
+    inset: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    z-index: 50000;
+
+    background: rgba(255, 255, 255, 0.72);
+
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-sizing: border-box;
+}
+
+.lounge-success-content {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 70px;
+    box-sizing: border-box;
+}
+
+.lounge-success-ticket-wrapper {
+    position: relative;
+    width: 650px;
+    flex-shrink: 0;
+}
+
+
+.lounge-success-ticket-image {
+    display: block;
+    width: 100%;
+    height: auto;
+
+    object-fit: contain;
+}
+
+.lounge-success-ticket-time {
+    position: absolute;
+    left: 52%;
+    bottom: 23%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    font-weight: 500;
+
+    color: #2b211c;
+
+    white-space: nowrap;
+}
+
+.lounge-success-ticket-place {
+    position: absolute;
+    left: 65%;
+    bottom: 23%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    font-weight: 500;
+
+    color: #2b211c;
+
+    white-space: nowrap;
+}
+
+.lounge-success-ticket-date {
+    position: absolute;
+    left: 81%;
+    bottom: 23%;
+
+    transform: translateX(-50%);
+
+    font-size: 14px;
+    font-weight: 500;
+
+    color: #2b211c;
+
+    white-space: nowrap;
+}
+
+.lounge-success-right {
+    width: 380px;
+    display: flex;
+    flex-direction: column;
+
+    gap: 15px;
+
+    flex-shrink: 0;
+}
+
+
+/* SUCCESS!! */
+
+.lounge-success-title {
+    margin-bottom: 5px;
+
+    font-family: "Holtwood One SC", serif;
+
+    font-size: 70px;
+    font-weight: 900;
+
+    line-height: 1;
+
+    color: #000;
+
+    white-space: nowrap;
+}
+
+.lounge-success-button {
+    width: 100%;
+    height: 60px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 18px;
+    font-weight: 500;
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        opacity 0.15s ease;
+}
+
+
+.lounge-success-button:hover {
+    transform: translateY(-2px);
+}
+
+
+.lounge-success-button:active {
+    transform: translateY(0);
+}
+
+
+/* 이미지 저장하기 */
+
+.lounge-success-save-button {
+    background: rgba(255, 255, 255, 0.95);
+
+    border: 1.5px solid #B07A4F;
+
+    color: #B07A4F;
+}
+
+
+/* 공항으로 이동하기 */
+
+.lounge-success-airport-button {
+    border: none;
+
+    background: #e5d4b5;
+
+    color: #9b694b;
+}
+
+.lounge-wallet-wrapper-takeoff {
+    right: 200px;
+    bottom: 10px;
+}
+
+.lounge-wallet-wrapper-takeoff .lounge-wallet-image {
+    width: 250px;
+}
+
+
+/* -------------------------
+   2. 주문 전 drink.png
+------------------------- */
+
+.lounge-drink-button-takeoff {
+    left: 20%;
+    bottom: 3%;
+}
+
+.lounge-drink-button-takeoff .lounge-drink-image {
+    width: 170px;
+}
+
+
+/* -------------------------
+   3. 주문 후 icetea.png
+------------------------- */
+
+.lounge-ordered-drink-takeoff {
+    left: 20%;
+    bottom: 1%;
+}
+
+.lounge-ordered-drink-takeoff .lounge-ordered-drink-image {
+    width: 300px;
+}
+
+/* =========================================
+   TAKEOFF에서도 공통 UI가 배경 위에 보이도록
+========================================= */
+
+
+/* 함께 하는 사람 수 */
+.lounge-people {
+    z-index: 10000;
+}
+
+
+/* 타이머 전체 */
+.lounge-timer {
+    z-index: 10000;
+}
+
+
+/* 음악 / 일시정지 버튼 */
+.lounge-timer-controls {
+    position: relative;
+    z-index: 10001;
+}
+
+
+/* 지갑 */
+.lounge-wallet-wrapper {
+    z-index: 500;
+}
+
+
+/* 주문 전 점선 음료 */
+.lounge-drink-button {
+    z-index: 500;
+}
+
+
+/* 주문된 음료 */
+.lounge-ordered-drink {
+    z-index: 500;
+}
+
+/* Takeoff 레이어 */
+.lounge-page-takeoff {
+    position: relative;
+    z-index: auto;
+}
+
+/* 타이머는 blur보다 위 */
+.lounge-timer {
+    z-index: 9999;
+}
+
+/* 사람 수 역시 위 */
+.lounge-people {
+    z-index: 10000;
+}
+/* =========================================
+   반응형
+========================================= */
+
+@media (max-width: 1100px) {
+
+    .lounge-success-content {
+        gap: 35px;
+
+        padding: 0 35px;
+    }
+
+
+    .lounge-success-ticket-wrapper {
+        width: 560px;
+    }
+
+
+    .lounge-success-right {
+        width: 320px;
+    }
+
+
+    .lounge-success-title {
+        font-size: 44px;
+    }
+}
+
+
+@media (max-width: 850px) {
+
+    .lounge-success-content {
+        flex-direction: column;
+
+        gap: 25px;
+    }
+
+
+    .lounge-success-ticket-wrapper {
+        width: min(
+            650px,
+            92vw
+        );
+    }
+
+
+    .lounge-success-right {
+        width: min(
+            380px,
+            80vw
+        );
+    }
+
+
+    .lounge-success-title {
+        text-align: center;
+    }
+}
