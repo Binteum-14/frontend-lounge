@@ -45,6 +45,7 @@ function ChatSection({ onPassportClick }) {
         text: `[첨부 파일] ${file.name}`,
       };
       setMessages((prev) => [...prev, fileMessage]);
+      e.target.value = '';
     }
   };
 

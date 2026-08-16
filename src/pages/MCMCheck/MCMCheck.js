@@ -9,6 +9,7 @@ import loadingMocaImg from '../../assets/images/LoadingMoca.png';
 import logoImg from '../../assets/images/MCMCheckLogo.png'; 
 
 import ResultView from './ResultView'; 
+
 const surveyQuestions = [
   {
     id: 1,
@@ -130,6 +131,7 @@ const McmCheck = () => {
 
   const handleLoginSubmit = (e) => {
     e.preventDefault();
+    localStorage.setItem('isLoggedIn', 'true');
     setShowResult(true); 
   };
 
@@ -139,6 +141,7 @@ const McmCheck = () => {
       alert('비밀번호가 일치하지 않습니다.');
       return;
     }
+    
     alert('회원가입이 완료되었습니다!');
     setShowResult(true); 
   };
@@ -218,14 +221,8 @@ const McmCheck = () => {
                   <input type="text" placeholder="아이디" value={signupId} onChange={(e) => setSignupId(e.target.value)} className="login-text-input" required />
                   <button type="button" className="duplicate-check-btn" onClick={() => alert('사용 가능한 아이디입니다.')}>중복확인</button>
                 </div>
-                <span className="input-guide-text" style={{ fontSize: '11px', color: '#888', textAlign: 'left', display: 'block', marginTop: '-4px', marginBottom: '6px' }}>
-                  영문, 숫자 포함 8~12자로 입력해주세요.
-                </span>
 
                 <input type="password" placeholder="비밀번호" value={signupPw} onChange={(e) => setSignupPw(e.target.value)} className="login-text-input" required />
-                <span className="input-guide-text" style={{ fontSize: '11px', color: '#888', textAlign: 'left', display: 'block', marginTop: '-4px', marginBottom: '6px' }}>
-                  영문, 숫자 포함 8~16자로 입력해주세요.
-                </span>
 
                 <input type="password" placeholder="비밀번호 재확인" value={signupPwConfirm} onChange={(e) => setSignupPwConfirm(e.target.value)} className="login-text-input" required />
                 {signupPw && signupPwConfirm && (
@@ -235,9 +232,6 @@ const McmCheck = () => {
                 )}
 
                 <input type="text" placeholder="닉네임" value={signupNickname} onChange={(e) => setSignupNickname(e.target.value)} className="login-text-input" required />
-                <span className="input-guide-text" style={{ fontSize: '11px', color: '#888', textAlign: 'left', display: 'block', marginTop: '-4px', marginBottom: '6px' }}>
-                  2~10자로 입력해주세요.
-                </span>
 
                 <button type="submit" className="login-action-btn" style={{ marginTop: '10px' }}>가입하기</button>
                 <a href="#back" className="signup-link" onClick={(e) => { e.preventDefault(); setAuthMode('main'); }}>로그인으로 돌아가기</a>
@@ -261,10 +255,10 @@ const McmCheck = () => {
       <div className="mcm-check-box">
         <div className="mcm-content-grid">
           <div className="mcm-left-panel">
-            <div className="moca-speech-bubble">
-              <p className="moca-hello">안녕하세요.</p>
-              <p className="moca-name"><strong>AI Moca</strong> 입니다.</p>
-              <p className="moca-desc">몇 가지 질문을 통해<br />당신의 구매 장벽을 진단하고<br />최적의 스타일을 추천해 드릴게요.</p>
+            <div className="moca-speech-bubble" style={{ fontSize: '15px' }}>
+              <p className="moca-hello" style={{ fontSize: '16px' }}>안녕하세요.</p>
+              <p className="moca-name" style={{ fontSize: '18px' }}><strong>AI Moca</strong> 입니다.</p>
+              <p className="moca-desc" style={{ fontSize: '14px', lineHeight: '1.5' }}>몇 가지 질문을 통해<br />당신의 구매 장벽을 진단하고<br />최적의 스타일을 추천해 드릴게요.</p>
             </div>
             <div className="moca-character-wrapper">
               <img src={mocaImg} alt="AI Moca" className="moca-img" />
@@ -287,7 +281,13 @@ const McmCheck = () => {
               {currentQ.options.map((option, idx) => {
                 const isSelected = selectedAnswers[currentQ.id] === option;
                 return (
-                  <button key={idx} type="button" className={`survey-option-btn ${isSelected ? 'selected' : ''}`} onClick={() => handleSelectOption(option)}>
+                  <button 
+                    key={idx} 
+                    type="button" 
+                    className={`survey-option-btn ${isSelected ? 'selected' : ''}`} 
+                    onClick={() => handleSelectOption(option)}
+                    style={{ fontSize: '16px', padding: '14px 18px' }}
+                  >
                     {option}
                   </button>
                 );

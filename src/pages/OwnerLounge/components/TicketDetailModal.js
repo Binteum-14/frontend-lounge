@@ -43,7 +43,7 @@ function TicketDetailModal({ isOpen, onClose, ticketData }) {
 
           {ticketData.qrData && (
             <div className="ticket-overlay-qr">
-              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${ticketData.qrData}`} alt="QR" />
+              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(ticketData.qrData)}`} alt="QR" />
             </div>
           )}
         </div>

@@ -20,7 +20,15 @@ const VisitPassView = () => {
     >
       <h1 
         className="lounge-logo" 
+        role="link"
+        tabIndex={0}
         onClick={() => navigate('/')} 
+        onKeyDown={(e) => { 
+          if (e.key === 'Enter' || e.key === ' ') { 
+            e.preventDefault(); 
+            navigate('/'); 
+          } 
+        }}
         style={{ cursor: 'pointer' }}
       >
         MCM LOUNGE

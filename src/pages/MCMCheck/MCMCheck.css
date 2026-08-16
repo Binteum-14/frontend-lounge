@@ -75,7 +75,7 @@
   background: #f4f0eb;
   padding: 18px 20px;
   border-radius: 16px;
-  font-size: 13px;
+  font-size: 18px;
   line-height: 1.5;
   color: #333;
   position: relative;
@@ -94,7 +94,7 @@
 }
 
 .moca-hello {
-  color: #777;
+  color: #333;
   margin-bottom: 2px;
 }
 
@@ -125,7 +125,7 @@
   align-items: center;
   gap: 10px;
   font-size: 13px;
-  color: #888;
+  color: #333;
   background: #faf8f5;
   padding: 14px 16px;
   border-radius: 10px;
