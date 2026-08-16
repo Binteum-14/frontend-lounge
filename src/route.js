@@ -14,7 +14,7 @@ import takeoffBgm from "./assets/music/Takeoff-background.mp3";
 import peopleIcon from "./assets/images/people.png";
 import volumeIcon from "./assets/images/volume.png";
 
-import mcmbag from "./assets/images/mcmbag.png";
+import mcmbag from "./assets/images/mcmwallet.png";
 
 import iceTeaImage from "./assets/images/icetea.png";
 import drinkIcon from "./assets/images/drink.png";

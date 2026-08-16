@@ -4,7 +4,7 @@ import focus1Background from "../../assets/images/focus1.png";
 import rightButton from "../../assets/images/rightbtn.png";
 import loungeIcon from "../../assets/images/sofa.png";
 import calendarIcon from "../../assets/images/calendar.png";
-import bookIcon from "../../assets/images/book.png";
+import bookIcon from "../../assets/images/bookicon.png";
 
 import "../../styles/FocusLounge.css";
 

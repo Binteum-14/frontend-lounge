@@ -25,6 +25,10 @@ function Home() {
     navigate('/mcm-check');
   };
 
+  const handleGoToFocusLounge = () => {
+    navigate('/focus-lounge');
+  };
+
   return (
     <div 
       className="home-container" 
