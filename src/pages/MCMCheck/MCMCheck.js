@@ -261,6 +261,50 @@ const McmCheck = () => {
     }
   };
 
+  if (isAnalyzing) {
+    return (
+      <div
+        className="mcm-check-container"
+        style={{
+          backgroundImage: `url(${bgImage})`,
+        }}
+      >
+        <div
+          className="mcm-header-logo"
+          onClick={() => navigate('/')}
+          style={{ cursor: 'pointer' }}
+        >
+          MCM LOUNGE
+        </div>
+
+        <div
+          className="mcm-check-box"
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'column',
+          }}
+        >
+          <img
+            src={loadingMocaImg}
+            alt="AI Moca 분석 중"
+            className="moca-loading-img"
+          />
+
+          <h2 className="moca-loading-title">
+            AI Moca가 분석 중이에요
+          </h2>
+
+          <p className="moca-loading-text">
+            고객님의 답변을 바탕으로
+            <br />
+            가장 잘 어울리는 스타일을 찾고 있어요.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (showResult) {
     return (
       <ResultView

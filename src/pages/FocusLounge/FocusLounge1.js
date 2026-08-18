@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { get } from "../../api";
 import config from "../../config";
 import focus1Background from "../../assets/images/focus1.png";
@@ -52,47 +52,6 @@ function FocusLounge1({
         selectedFlight,
         setSelectedFlight,
     ] = useState(0);
-
-    // 타이머가 이미 실행 중이면
-    // FocusLounge1으로 돌아와도 모달 숨김
-    useEffect(() => {
-        if (timerActive) {
-            setShowModal(false);
-        }
-    }, [timerActive]);
-
-    useEffect(() => {
-        if (!openFlightModal) {
-            return;
-        }
-
-        if (flightFocusSeconds > 0) {
-            const nextHours = Math.floor(
-                flightFocusSeconds / 3600
-            );
-
-            const nextMinutes = Math.floor(
-                (flightFocusSeconds % 3600) / 60
-            );
-
-            setHours(nextHours);
-            setMinutes(nextMinutes);
-        }
-
-        // 항공편 API 조회
-        fetchFlights();
-
-        setModalStep("flight");
-        setShowModal(true);
-
-        if (onFlightModalOpened) {
-            onFlightModalOpened();
-        }
-    }, [
-        openFlightModal,
-        flightFocusSeconds,
-        onFlightModalOpened,
-    ]);
 
     const handleImageLoad = () => {
         const maxScroll =
@@ -204,28 +163,10 @@ function FocusLounge1({
         );
     };
 
-    const startTime = now.toISOString();
-
-    const getLocalDateTime = () => {
-        const now = new Date();
-
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, "0");
-        const day = String(now.getDate()).padStart(2, "0");
-        const hour = String(now.getHours()).padStart(2, "0");
-        const minute = String(now.getMinutes()).padStart(2, "0");
-        const second = String(now.getSeconds()).padStart(2, "0");
-
-        return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
-    };
-
     const [flights, setFlights] = useState([]);
-    const [flightLoading, setFlightLoading] = useState(false);
 
-    const fetchFlights = async () => {
+    const fetchFlights = useCallback(async () => {
         try {
-            setFlightLoading(true);
-
             const now = new Date();
 
             const startTime =
@@ -314,10 +255,48 @@ function FocusLounge1({
             );
 
             setFlights([]);
-        } finally {
-            setFlightLoading(false);
         }
-    };
+    }, [hours, minutes]);
+
+    useEffect(() => {
+        if (timerActive) {
+            setShowModal(false);
+        }
+    }, [timerActive]);
+
+    useEffect(() => {
+        if (!openFlightModal) {
+            return;
+        }
+
+        if (flightFocusSeconds > 0) {
+            const nextHours = Math.floor(
+                flightFocusSeconds / 3600
+            );
+
+            const nextMinutes = Math.floor(
+                (flightFocusSeconds % 3600) / 60
+            );
+
+            setHours(nextHours);
+            setMinutes(nextMinutes);
+        }
+
+        // 항공편 API 조회
+        fetchFlights();
+
+        setModalStep("flight");
+        setShowModal(true);
+
+        if (onFlightModalOpened) {
+            onFlightModalOpened();
+        }
+    }, [
+        openFlightModal,
+        flightFocusSeconds,
+        onFlightModalOpened,
+        fetchFlights,
+    ]);
 
     return (
         <div className="focus-lounge-page-wrapper">

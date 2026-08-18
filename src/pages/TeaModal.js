@@ -13,13 +13,9 @@ function TeaModal({ onClose, onOrder }) {
     const [drinkItems, setDrinkItems] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
 
-    const [loading, setLoading] = useState(false);
-
     useEffect(() => {
         const fetchSnacks = async () => {
             try {
-                setLoading(true);
-
                 const response = await get(
                     config.SNACK.GET
                 );
@@ -51,8 +47,6 @@ function TeaModal({ onClose, onOrder }) {
                 );
 
                 setDrinkItems([]);
-            } finally {
-                setLoading(false);
             }
         };
 
