@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import { CheckSquare, Coffee, Ticket } from 'lucide-react';
+import { post } from '../../api';
+import config from '../../config';
 
 import bgImage from '../../assets/images/MCMAirport.png';
 import luggageImg from '../../assets/images/luggage.png';
@@ -28,6 +30,30 @@ function Home() {
   const handleGoToFocusLounge = () => {
     navigate('/focus-lounge');
   };
+
+  useEffect(() => {
+    const createGuestSession = async () => {
+      try {
+        const response = await post(
+          config.AUTH.GUEST_SESSION,
+          {}
+        );
+
+        console.log(
+          '게스트 세션 응답:',
+          response
+        );
+
+      } catch (error) {
+        console.error(
+          '게스트 세션 발급 실패:',
+          error.response?.data || error
+        );
+      }
+    };
+
+    createGuestSession();
+  }, []);
 
   return (
     <div 

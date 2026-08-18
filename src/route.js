@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import html2canvas from "html2canvas";
+import { get } from "./api";
+import config from "./config";
 import FocusLounge1 from "./pages/FocusLounge/FocusLounge1";
 import FocusLounge2 from "./pages/FocusLounge/FocusLounge2";
 import MCMLounge from "./pages/FocusLounge/MCMLounge";
@@ -46,6 +48,8 @@ function Route() {
 
     /* MCM 제품 팝업 */
     const [showProductModal, setShowProductModal] = useState(false);
+    const [product, setProduct] = useState(null);
+    const [productLoading, setProductLoading] = useState(false);
 
     /* 성공 화면 */
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -347,6 +351,37 @@ function Route() {
                     error
                 );
             });
+        }
+    };
+
+    const fetchProductDetail = async (productId) => {
+        try {
+            setProductLoading(true);
+
+            const response = await get(
+                config.PRODUCT.DETAIL_GET(productId)
+            );
+
+            console.log("상품 상세 API 응답:", response);
+
+            if (
+                response.isSuccess &&
+                response.result
+            ) {
+                setProduct(response.result);
+            } else {
+                setProduct(null);
+            }
+
+        } catch (error) {
+            console.error(
+                "상품 상세 조회 실패:",
+                error.response?.data || error
+            );
+
+            setProduct(null);
+        } finally {
+            setProductLoading(false);
         }
     };
 
@@ -670,9 +705,10 @@ function Route() {
             <button
                 type="button"
                 className={`lounge-wallet-wrapper lounge-wallet-wrapper-${page}`}
-                onClick={() =>
-                    setShowProductModal(true)
-                }
+                onClick={() => {
+                    fetchProductDetail(1);
+                    setShowProductModal(true);
+                }}
                 aria-label="MCM 제품 정보 보기"
             >
                 <img
@@ -716,8 +752,11 @@ function Route() {
                 >
                     <img
                         className="lounge-ordered-drink-image"
-                        src={iceTeaImage}
-                        alt="주문한 아이스티"
+                        src={
+                            selectedDrink.snackImageUrl ||
+                            iceTeaImage
+                        }
+                        alt="주문한 간식"
                     />
                 </button>
             )}
@@ -734,10 +773,6 @@ function Route() {
                     onOrder={handleDrinkOrder}
                 />
             )}
-
-            {/* =========================================
-                MCM 제품 팝업
-            ========================================= */}
 
             {showProductModal && (
                 <div
@@ -764,23 +799,69 @@ function Route() {
                             ×
                         </button>
 
-                        <img
-                            className="lounge-product-modal-image"
-                            src={mcmbag}
-                            alt="Pina 비세토스 스터드 장식 토트"
-                        />
+                       {productLoading ? (
+                            <div>
+                                상품 정보를 불러오는 중입니다...
+                            </div>
+                        ) : product ? (
+                            <>
+                                <img
+                                    className="lounge-product-modal-image"
+                                    src={product.imageUrl}
+                                    alt={product.name}
+                                />
 
-                        <div className="lounge-product-modal-name">
-                            Pina 비세토스 스터드 장식 토트
-                        </div>
+                                <div className="lounge-product-modal-name">
+                                    {product.name}
+                                </div>
 
-                        <div className="lounge-product-modal-price">
-                            ₩ 1,190,000
-                        </div>
+                                <div className="lounge-product-modal-price">
+                                    ₩ {product.price?.toLocaleString()}
+                                </div>
 
-                        <div className="lounge-product-modal-description">
-                            제품 설명
-                        </div>
+                                <div className="lounge-product-modal-description">
+                                    {product.description}
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className="lounge-product-modal-button"
+                                    onClick={() => {
+                                        if (product.detailUrl) {
+                                            window.open(
+                                                product.detailUrl,
+                                                "_blank"
+                                            );
+                                        }
+                                    }}
+                                >
+                                    <span>
+                                        제품 자세히보기
+                                    </span>
+
+                                    <span className="lounge-product-modal-arrow">
+                                        〉
+                                    </span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="lounge-product-modal-button"
+                                >
+                                    <span>
+                                        AI 수납 확인하기
+                                    </span>
+
+                                    <span className="lounge-product-modal-arrow">
+                                        〉
+                                    </span>
+                                </button>
+                            </>
+                        ) : (
+                            <div>
+                                상품 정보를 불러오지 못했습니다.
+                            </div>
+                        )}
 
                         <button
                             type="button"
