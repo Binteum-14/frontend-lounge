@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
-
+import React, { useCallback, useEffect, useState } from "react";
+import { get } from "../../api";
+import config from "../../config";
 import focus1Background from "../../assets/images/focus1.png";
 import rightButton from "../../assets/images/rightbtn.png";
 import loungeIcon from "../../assets/images/sofa.png";
 import calendarIcon from "../../assets/images/calendar.png";
 import bookIcon from "../../assets/images/bookicon.png";
-
 import "../../styles/FocusLounge.css";
 
 function FocusLounge1({
@@ -52,52 +52,6 @@ function FocusLounge1({
         selectedFlight,
         setSelectedFlight,
     ] = useState(0);
-
-    // 타이머가 이미 실행 중이면
-    // FocusLounge1으로 돌아와도 모달 숨김
-    useEffect(() => {
-        if (timerActive) {
-            setShowModal(false);
-        }
-    }, [timerActive]);
-
-    // =========================================
-    // SUCCESS 화면에서
-    // "공항으로 이동하기"를 눌렀을 때
-    // 항공편 추천 팝업 바로 열기
-    // =========================================
-    useEffect(() => {
-        if (!openFlightModal) {
-            return;
-        }
-
-        // SUCCESS에서 사용했던 총 시간을
-        // 항공편 팝업의 시간으로 다시 넣어줌
-        if (flightFocusSeconds > 0) {
-            const nextHours = Math.floor(
-                flightFocusSeconds / 3600
-            );
-
-            const nextMinutes = Math.floor(
-                (flightFocusSeconds % 3600) / 60
-            );
-
-            setHours(nextHours);
-            setMinutes(nextMinutes);
-        }
-
-        // 바로 항공편 추천 화면 열기
-        setModalStep("flight");
-        setShowModal(true);
-
-        if (onFlightModalOpened) {
-            onFlightModalOpened();
-        }
-    }, [
-        openFlightModal,
-        flightFocusSeconds,
-        onFlightModalOpened,
-    ]);
 
     const handleImageLoad = () => {
         const maxScroll =
@@ -193,13 +147,9 @@ function FocusLounge1({
             setShowModal(false);
         }
 
-        if (
-            selectedPlace ===
-            "airplane"
-        ) {
-            setModalStep(
-                "flight"
-            );
+        if (selectedPlace === "airplane") {
+            fetchFlights(totalMinutes);
+            setModalStep("flight");
         }
     };
 
@@ -213,55 +163,141 @@ function FocusLounge1({
         );
     };
 
-    // =========================================
-    // 항공편 데이터
-    // =========================================
-    const flights = [
-        {
-            id: 1,
-            airline: "대한항공",
-            flightNo: "KE888",
-            from: "ICN",
-            fromName: "인천",
-            departure: "18:00",
-            to: "NRT",
-            toName: "도쿄 나리타",
-            arrival: "21:00",
-        },
-        {
-            id: 2,
-            airline: "대한항공",
-            flightNo: "KE888",
-            from: "ICN",
-            fromName: "인천",
-            departure: "18:00",
-            to: "NRT",
-            toName: "도쿄 나리타",
-            arrival: "21:00",
-        },
-        {
-            id: 3,
-            airline: "대한항공",
-            flightNo: "KE888",
-            from: "ICN",
-            fromName: "인천",
-            departure: "18:00",
-            to: "NRT",
-            toName: "도쿄 나리타",
-            arrival: "21:00",
-        },
-        {
-            id: 4,
-            airline: "대한항공",
-            flightNo: "KE888",
-            from: "ICN",
-            fromName: "인천",
-            departure: "18:00",
-            to: "NRT",
-            toName: "도쿄 나리타",
-            arrival: "21:00",
-        },
-    ];
+    const [flights, setFlights] = useState([]);
+
+    const fetchFlights = useCallback(async (focusMinutes) => {
+        try {
+            const now = new Date();
+
+            const startTime =
+                `${String(now.getHours()).padStart(2, "0")}:` +
+                `${String(now.getMinutes()).padStart(2, "0")}:` +
+                `${String(now.getSeconds()).padStart(2, "0")}`;
+
+            console.log("항공편 요청값:", {
+                startTime,
+                focusMinutes,
+            });
+
+            const response = await get(
+                config.FLIGHT.GET,
+                {
+                    startTime,
+                    focusMinutes,
+                }
+            );
+
+            console.log("항공편 API 응답:", response);
+
+            const dummyFlights = [
+                {
+                    flightNumber: "KE101",
+                    airline: "대한항공",
+                    departureAirportCode: "ICN",
+                    departureAirportName: "인천",
+                    arrivalAirportCode: "FUK",
+                    arrivalAirportName: "후쿠오카",
+                    departureTime: "00:30",
+                    durationMinutes: 80,
+                },
+                {
+                    flightNumber: "OZ102",
+                    airline: "아시아나항공",
+                    departureAirportCode: "ICN",
+                    departureAirportName: "인천",
+                    arrivalAirportCode: "KIX",
+                    arrivalAirportName: "오사카 간사이",
+                    departureTime: "01:10",
+                    durationMinutes: 110,
+                },
+                {
+                    flightNumber: "KE703",
+                    airline: "대한항공",
+                    departureAirportCode: "ICN",
+                    departureAirportName: "인천",
+                    arrivalAirportCode: "NRT",
+                    arrivalAirportName: "도쿄 나리타",
+                    departureTime: "01:40",
+                    durationMinutes: 140,
+                },
+                {
+                    flightNumber: "TW201",
+                    airline: "티웨이항공",
+                    departureAirportCode: "ICN",
+                    departureAirportName: "인천",
+                    arrivalAirportCode: "TPE",
+                    arrivalAirportName: "타이베이",
+                    departureTime: "02:20",
+                    durationMinutes: 160,
+                },
+            ];
+
+            if (
+                response.isSuccess &&
+                Array.isArray(response.result)
+            ) {
+                if (response.result.length > 0) {
+                    setFlights(response.result);
+                } else {
+                    setFlights(dummyFlights);
+                }
+            } else {
+                setFlights(dummyFlights);
+            }
+
+        } catch (error) {
+            console.error(
+                "항공편 조회 실패:",
+                error.response?.data || error
+            );
+
+            setFlights([]);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (timerActive) {
+            setShowModal(false);
+        }
+    }, [timerActive]);
+
+    useEffect(() => {
+        if (!openFlightModal) {
+            return;
+        }
+
+        let focusMinutes = 0;
+
+        if (flightFocusSeconds > 0) {
+            const nextHours = Math.floor(
+                flightFocusSeconds / 3600
+            );
+
+            const nextMinutes = Math.floor(
+                (flightFocusSeconds % 3600) / 60
+            );
+
+            setHours(nextHours);
+            setMinutes(nextMinutes);
+
+            focusMinutes =
+                nextHours * 60 + nextMinutes;
+        }
+
+        fetchFlights(focusMinutes);
+
+        setModalStep("flight");
+        setShowModal(true);
+
+        if (onFlightModalOpened) {
+            onFlightModalOpened();
+        }
+    }, [
+        openFlightModal,
+        flightFocusSeconds,
+        onFlightModalOpened,
+        fetchFlights,
+    ]);
 
     return (
         <div className="focus-lounge-page-wrapper">
@@ -529,9 +565,7 @@ function FocusLounge1({
 
                                         return (
                                             <div
-                                                key={
-                                                    flight.id
-                                                }
+                                                key={flight.flightNumber}
                                                 className={`focus-flight-card ${
                                                     isSelected
                                                         ? "selected"
@@ -555,49 +589,35 @@ function FocusLounge1({
                                                         <div>
 
                                                             <div className="focus-flight-number">
-                                                                {flight.flightNo}
+                                                                {flight.flightNumber}
                                                             </div>
 
                                                             <div className="focus-airline-name">
                                                                 {flight.airline}
                                                             </div>
-
                                                         </div>
-
                                                     </div>
-
                                                     <div className="focus-flight-duration">
-
                                                         비행시간
                                                         <br />
-
                                                         <strong>
-                                                            {hours}시간{" "}
-                                                            {minutes}분
+                                                            {Math.floor(flight.durationMinutes / 60)}시간{" "}
+                                                            {flight.durationMinutes % 60}분
                                                         </strong>
-
                                                     </div>
-
                                                 </div>
-
                                                 <div className="focus-flight-route">
-
                                                     <div className="focus-airport">
-
                                                         <div className="focus-airport-code">
-                                                            {flight.from}
+                                                            {flight.departureAirportCode}
                                                         </div>
-
                                                         <div className="focus-airport-name">
-                                                            {flight.fromName}
+                                                            {flight.departureAirportName}
                                                         </div>
-
                                                         <div className="focus-airport-time">
-                                                            {flight.departure}
+                                                            {flight.departureTime}
                                                         </div>
-
                                                     </div>
-
                                                     <div className="focus-plane-area">
 
                                                         <div className="focus-plane-icon">
@@ -609,27 +629,16 @@ function FocusLounge1({
                                                         <div className="focus-plane-direct">
                                                             직항
                                                         </div>
-
                                                     </div>
-
                                                     <div className="focus-airport">
-
                                                         <div className="focus-airport-code">
-                                                            {flight.to}
+                                                            {flight.arrivalAirportCode}
                                                         </div>
-
                                                         <div className="focus-airport-name">
-                                                            {flight.toName}
+                                                            {flight.arrivalAirportName}
                                                         </div>
-
-                                                        <div className="focus-airport-time">
-                                                            {flight.arrival}
-                                                        </div>
-
                                                     </div>
-
                                                 </div>
-
                                             </div>
                                         );
                                     }
