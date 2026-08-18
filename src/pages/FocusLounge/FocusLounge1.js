@@ -148,7 +148,7 @@ function FocusLounge1({
         }
 
         if (selectedPlace === "airplane") {
-            fetchFlights();
+            fetchFlights(totalMinutes);
             setModalStep("flight");
         }
     };
@@ -165,7 +165,7 @@ function FocusLounge1({
 
     const [flights, setFlights] = useState([]);
 
-    const fetchFlights = useCallback(async () => {
+    const fetchFlights = useCallback(async (focusMinutes) => {
         try {
             const now = new Date();
 
@@ -173,9 +173,6 @@ function FocusLounge1({
                 `${String(now.getHours()).padStart(2, "0")}:` +
                 `${String(now.getMinutes()).padStart(2, "0")}:` +
                 `${String(now.getSeconds()).padStart(2, "0")}`;
-
-            const focusMinutes =
-                hours * 60 + minutes;
 
             console.log("항공편 요청값:", {
                 startTime,
@@ -256,7 +253,7 @@ function FocusLounge1({
 
             setFlights([]);
         }
-    }, [hours, minutes]);
+    }, []);
 
     useEffect(() => {
         if (timerActive) {
@@ -269,6 +266,8 @@ function FocusLounge1({
             return;
         }
 
+        let focusMinutes = 0;
+
         if (flightFocusSeconds > 0) {
             const nextHours = Math.floor(
                 flightFocusSeconds / 3600
@@ -280,10 +279,12 @@ function FocusLounge1({
 
             setHours(nextHours);
             setMinutes(nextMinutes);
+
+            focusMinutes =
+                nextHours * 60 + nextMinutes;
         }
 
-        // 항공편 API 조회
-        fetchFlights();
+        fetchFlights(focusMinutes);
 
         setModalStep("flight");
         setShowModal(true);
