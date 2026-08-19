@@ -182,15 +182,36 @@ function Route() {
                     heartbeatRequestPromise =
                         currentHeartbeatPromise;
 
-                    currentHeartbeatPromise.finally(() => {
+                    const currentHeartbeatPromise =
+                        post(
+                            config.PRESENCE.HEARTBEAT,
+                            {
+                                themeType:
+                                    presenceTheme,
+                            },
+                            hasAccessToken
+                                ? {}
+                                : {
+                                    skipAuth: true,
+                                }
+                        );
+
+                    heartbeatRequestPromise =
+                        currentHeartbeatPromise;
+
+
+                    /* =========================================
+                    heartbeat 요청 정리
+                    ========================================= */
+
+                    const cleanupHeartbeat = () => {
                         window.setTimeout(
                             () => {
                                 /*
-                                * 내가 만든 요청이 아직
-                                * 현재 요청일 때만 제거
+                                * 이 요청이 아직 현재 요청일 때만 제거
                                 *
-                                * 그 사이 새로운 요청이 생겼다면
-                                * 절대 제거하지 않음
+                                * 그 사이 새로운 heartbeat 요청이 생겼다면
+                                * 새로운 요청은 건드리지 않음
                                 */
                                 if (
                                     heartbeatRequestPromise ===
@@ -202,7 +223,19 @@ function Route() {
                             },
                             1000
                         );
-                    });
+                    };
+
+
+                    /*
+                    * 성공하든 실패하든 cleanup 실행
+                    *
+                    * finally()에서 생길 수 있는
+                    * 처리되지 않은 Promise rejection 방지
+                    */
+                    currentHeartbeatPromise.then(
+                        cleanupHeartbeat,
+                        cleanupHeartbeat
+                    );
 
                 } else {
                     console.log(
