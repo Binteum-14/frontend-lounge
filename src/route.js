@@ -163,7 +163,7 @@ function Route() {
                     lastHeartbeatKey =
                         heartbeatKey;
 
-                    heartbeatRequestPromise =
+                    const currentHeartbeatPromise =
                         post(
                             config.PRESENCE.HEARTBEAT,
 
@@ -177,15 +177,32 @@ function Route() {
                                 : {
                                     skipAuth: true,
                                 }
-                        ).finally(() => {
-                            window.setTimeout(
-                                () => {
+                        );
+
+                    heartbeatRequestPromise =
+                        currentHeartbeatPromise;
+
+                    currentHeartbeatPromise.finally(() => {
+                        window.setTimeout(
+                            () => {
+                                /*
+                                * 내가 만든 요청이 아직
+                                * 현재 요청일 때만 제거
+                                *
+                                * 그 사이 새로운 요청이 생겼다면
+                                * 절대 제거하지 않음
+                                */
+                                if (
+                                    heartbeatRequestPromise ===
+                                    currentHeartbeatPromise
+                                ) {
                                     heartbeatRequestPromise =
                                         null;
-                                },
-                                1000
-                            );
-                        });
+                                }
+                            },
+                            1000
+                        );
+                    });
 
                 } else {
                     console.log(
