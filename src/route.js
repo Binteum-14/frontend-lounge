@@ -1021,11 +1021,23 @@ function Route() {
     };
 
     /* =========================================
-       지갑 클릭
+    지갑 클릭
     ========================================= */
 
     const handleProductClick = () => {
         ensureMusicPlaying();
+
+        /*
+        * 아직 간식을 선택하지 않은 경우
+        * 상품 API 호출하지 않음
+        */
+        if (!selectedDrink) {
+            setProduct(null);
+            setProductLoading(false);
+            setShowProductModal(true);
+
+            return;
+        }
 
         const productId =
             getSelectedProductId();
@@ -1040,9 +1052,7 @@ function Route() {
             productId
         );
 
-        setShowProductModal(
-            true
-        );
+        setShowProductModal(true);
 
         fetchProductDetail(
             productId
@@ -1560,7 +1570,10 @@ function Route() {
                 />
             )}
 
-            {/* 상품 상세 팝업 */}
+            {/* =========================================
+                상품 상세 팝업
+            ========================================= */}
+
             {showProductModal && (
                 <div
                     className="lounge-product-modal-overlay"
@@ -1574,6 +1587,7 @@ function Route() {
                             event.stopPropagation()
                         }
                     >
+                        {/* 닫기 버튼 */}
                         <button
                             type="button"
                             className="lounge-product-modal-close"
@@ -1585,11 +1599,32 @@ function Route() {
                             ×
                         </button>
 
-                        {productLoading ? (
-                            <div>
+
+                        {/* =========================================
+                            간식 선택 전
+                        ========================================= */}
+
+                        {!selectedDrink ? (
+                            <div className="lounge-product-empty">
+                                간식을 선택해주세요
+                            </div>
+
+                        ) : productLoading ? (
+
+                            /* =========================================
+                            상품 정보 로딩
+                            ========================================= */
+
+                            <div className="lounge-product-loading">
                                 상품 정보를 불러오는 중입니다...
                             </div>
+
                         ) : product ? (
+
+                            /* =========================================
+                            간식 선택 후 상품 정보
+                            ========================================= */
+
                             <>
                                 <img
                                     className="lounge-product-modal-image"
@@ -1616,6 +1651,8 @@ function Route() {
                                     {productDescription}
                                 </div>
 
+
+                                {/* 제품 자세히보기 */}
                                 <button
                                     type="button"
                                     className="lounge-product-modal-button"
@@ -1650,6 +1687,8 @@ function Route() {
                                     </span>
                                 </button>
 
+
+                                {/* AI 수납 확인 */}
                                 <button
                                     type="button"
                                     className="lounge-product-modal-button"
@@ -1663,8 +1702,10 @@ function Route() {
                                     </span>
                                 </button>
                             </>
+
                         ) : (
-                            <div>
+
+                            <div className="lounge-product-loading">
                                 상품 정보를 불러오지 못했습니다.
                             </div>
                         )}

@@ -79,6 +79,7 @@ body,
 .lounge-wallet-image:not(.lounge-wallet-image-api) {
     width: 250px;
     height: auto;
+    transform: translate(0, 30px);
 }
 
 /* Takeoff API 가방 */
