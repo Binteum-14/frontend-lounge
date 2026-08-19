@@ -106,16 +106,24 @@ function Route() {
     /* =========================================
     Presence Heartbeat
 
-    개발환경 StrictMode 중복 요청 방지
+    focus1 / focus2 / mcm = LOUNGE
+    takeoff = FLIGHT
+
+    같은 라운지 내부 페이지 이동 시
+    heartbeat 재호출하지 않음
+
+    LOUNGE ↔ FLIGHT 전환 시에만 즉시 호출
+    이후 1분마다 호출
     ========================================= */
+
+    const presenceTheme =
+        page === "takeoff"
+            ? "FLIGHT"
+            : "LOUNGE";
+
 
     useEffect(() => {
         let isMounted = true;
-
-        const themeType =
-            page === "takeoff"
-                ? "FLIGHT"
-                : "LOUNGE";
 
         const sendHeartbeat = async () => {
             const accessToken =
@@ -127,28 +135,30 @@ function Route() {
                 !!accessToken;
 
             const heartbeatKey =
-                `${themeType}-${hasAccessToken ? "USER" : "GUEST"}`;
+                `${presenceTheme}-${
+                    hasAccessToken
+                        ? "USER"
+                        : "GUEST"
+                }`;
 
             try {
                 console.log(
                     "Heartbeat 요청 준비:",
                     {
-                        themeType,
+                        themeType:
+                            presenceTheme,
                         hasAccessToken,
                     }
                 );
 
+
                 /*
-                * 같은 heartbeat 요청이 이미 진행 중이면
-                * 새로운 요청을 만들지 않고
-                * 기존 요청 결과를 같이 기다림
-                *
-                * React StrictMode의
-                * 동시 2회 호출 방지
+                * StrictMode 중복 요청 방지
                 */
                 if (
                     !heartbeatRequestPromise ||
-                    lastHeartbeatKey !== heartbeatKey
+                    lastHeartbeatKey !==
+                        heartbeatKey
                 ) {
                     lastHeartbeatKey =
                         heartbeatKey;
@@ -156,19 +166,18 @@ function Route() {
                     heartbeatRequestPromise =
                         post(
                             config.PRESENCE.HEARTBEAT,
+
                             {
-                                themeType,
+                                themeType:
+                                    presenceTheme,
                             },
+
                             hasAccessToken
                                 ? {}
                                 : {
                                     skipAuth: true,
                                 }
                         ).finally(() => {
-                            /*
-                            * 약간의 시간 동안 Promise 유지
-                            * StrictMode 재마운트 대응
-                            */
                             window.setTimeout(
                                 () => {
                                     heartbeatRequestPromise =
@@ -177,33 +186,41 @@ function Route() {
                                 1000
                             );
                         });
+
                 } else {
                     console.log(
                         "중복 Heartbeat 요청 방지됨"
                     );
                 }
 
+
                 const response =
                     await heartbeatRequestPromise;
+
 
                 console.log(
                     "Heartbeat API 응답:",
                     response
                 );
 
+
                 if (!isMounted) {
                     return;
                 }
+
 
                 if (
                     response?.isSuccess &&
                     response?.result
                 ) {
                     const loungeCount =
-                        response.result.loungeCount;
+                        response.result
+                            .loungeCount;
 
                     const flightCount =
-                        response.result.flightCount;
+                        response.result
+                            .flightCount;
+
 
                     if (
                         typeof loungeCount ===
@@ -214,6 +231,7 @@ function Route() {
                         );
                     }
 
+
                     if (
                         typeof flightCount ===
                         "number"
@@ -222,6 +240,7 @@ function Route() {
                             flightCount
                         );
                     }
+
 
                     console.log(
                         "현재 라운지 인원:",
@@ -233,6 +252,7 @@ function Route() {
                         flightCount
                     );
                 }
+
             } catch (error) {
                 console.error(
                     "Heartbeat 요청 실패:",
@@ -242,19 +262,23 @@ function Route() {
             }
         };
 
+
         /*
-        * 진입 즉시
+        * LOUNGE 또는 FLIGHT 진입 시 즉시 1번
         */
         sendHeartbeat();
 
+
         /*
-        * 1분마다
+        * 같은 장소에 머무는 동안
+        * 1분마다 갱신
         */
         const heartbeatInterval =
             window.setInterval(
                 sendHeartbeat,
                 60_000
             );
+
 
         return () => {
             isMounted = false;
@@ -263,7 +287,8 @@ function Route() {
                 heartbeatInterval
             );
         };
-    }, [page]);
+
+    }, [presenceTheme]);
 
     /* =========================================
        현재 페이지 BGM
@@ -1187,25 +1212,25 @@ function Route() {
         if (
             successPage === "focus1"
         ) {
-            return "공항라운지1";
+            return "LOUNGE1";
         }
 
         if (
             successPage === "focus2"
         ) {
-            return "공항라운지2";
+            return "LOUNGE2";
         }
 
         if (
             successPage === "mcm"
         ) {
-            return "mcmLounge";
+            return "MCMLounge";
         }
 
         if (
             successPage === "takeoff"
         ) {
-            return "비행기";
+            return "TAKEOFF";
         }
 
         return "";
@@ -1456,7 +1481,11 @@ function Route() {
                 aria-label="MCM 제품 정보 보기"
             >
                 <img
-                    className="lounge-wallet-image"
+                    className={
+                        selectedDrink?.productImageUrl
+                            ? "lounge-wallet-image lounge-wallet-image-api"
+                            : "lounge-wallet-image"
+                    }
                     src={
                         selectedDrink?.productImageUrl ||
                         mcmbag

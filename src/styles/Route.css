@@ -830,6 +830,22 @@
 .lounge-people {
     z-index: 10000;
 }
+
+/* 기본으로 처음 떠있는 지갑 */
+.lounge-wallet-image {
+    display: block;
+    width: 200px;
+    height: auto;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+/* 간식 API 연결 후 받아온 가방 이미지 */
+.lounge-wallet-image-api {
+    width: 500px;
+    height: auto;
+    transform: translate(230px, 80px);
+}
 /* =========================================
    반응형
 ========================================= */

@@ -74,3 +74,17 @@ body,
 
     pointer-events: none;
 }
+/* Takeoff 기본 가방 */
+.lounge-wallet-wrapper-takeoff
+.lounge-wallet-image:not(.lounge-wallet-image-api) {
+    width: 250px;
+    height: auto;
+}
+
+/* Takeoff API 가방 */
+.lounge-wallet-wrapper-takeoff
+.lounge-wallet-image.lounge-wallet-image-api {
+    width: 500px;
+    height: auto;
+    transform: translate(70px, 50px);
+}
