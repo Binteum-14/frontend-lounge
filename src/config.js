@@ -53,7 +53,7 @@ const config = {
     GET: `${BASE_URL}/api/focus/flights`,
   },
 
-  PRESENCE:{
+  PRESENCE: {
     HEARTBEAT: `${BASE_URL}/api/presence/heartbeat`,
   },
 

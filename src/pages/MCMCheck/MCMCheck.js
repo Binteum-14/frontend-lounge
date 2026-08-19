@@ -11,6 +11,7 @@ import loadingMocaImg from '../../assets/images/LoadingMoca.png';
 import logoImg from '../../assets/images/MCMCheckLogo.png'; 
 
 import ResultView from './ResultView'; 
+ 
 
 const surveyQuestions = [
   {
@@ -157,6 +158,7 @@ const McmCheck = () => {
           "true"
         );
 
+        // 3. 토큰을 localStorage 대신 쿠키에 저장 (api.js 인터셉터가 읽을 수 있도록 설정)
         if (response.result?.accessToken) {
           localStorage.setItem(
             "accessToken",
@@ -219,7 +221,6 @@ const McmCheck = () => {
       if (response.isSuccess) {
         alert('회원가입이 완료되었습니다.');
 
-        // 회원가입 완료 후 로그인 화면으로 이동
         setLoginId(signupId);
         setAuthMode('login');
       } else {
@@ -329,6 +330,7 @@ const McmCheck = () => {
     return (
       <ResultView
         onGoToLounge={() => navigate('/owner-lounge')}
+        surveyAnswers={selectedAnswers} // 4. 설문 답변 객체를 ResultView로 전달
       />
     );
   }

@@ -1,13 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LogOut, UserX } from 'lucide-react';
 
-import passportBookBg from '../../../assets/images/Book.png';
+import passportBookBg from '../../../assets/images/book.png';
 import visitPassBg from '../../../assets/images/VisitPass.png';
 import studyCardBg from '../../../assets/images/StudyCard.png';
 import TicketDetailModal from './TicketDetailModal';
+import { logoutUser, withdrawUser, getUsername } from '../../../api'; 
 
 function PassportModal({ isOpen, onClose }) {
   const [selectedTicketData, setSelectedTicketData] = useState(null);
+  
+  const [username, setUsername] = useState('jimal');
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await getUsername();
+        console.log("서버 응답 확인:", response);
+        
+        if (response && response.isSuccess) {
+          setUsername(response.result.username); 
+        }
+      } catch (error) {
+        console.error("사용자 이름을 불러오지 못했습니다.", error);
+      }
+    };
+
+    if (isOpen) {
+      fetchUser(); 
+    }
+  }, [isOpen]);
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      alert("로그아웃되었습니다.");
+      window.location.href = "/"; 
+    } catch (error) {
+      alert("로그아웃에 실패했습니다.");
+    }
+  };
+
+  const handleWithdraw = async () => {
+    if (window.confirm("정말 탈퇴하시겠습니까?")) {
+      try {
+        await withdrawUser();
+        alert("회원 탈퇴가 완료되었습니다.");
+        window.location.href = "/";
+      } catch (error) {
+        alert("회원 탈퇴에 실패했습니다.");
+      }
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -15,9 +59,9 @@ function PassportModal({ isOpen, onClose }) {
     setSelectedTicketData({
       bgUrl: visitPassBg,
       downloadName: 'MCM_Visit_Pass.png',
-      qrData: 'MCM-VISIT-PASS-JIMAL',
+      qrData: `MCM-VISIT-PASS-${username.toUpperCase()}`, 
       fields: [
-        { label: 'Passenger', value: 'jimal', className: 'passenger-field' },
+        { label: 'Passenger', value: username, className: 'passenger-field' },
         { label: 'Issued', value: '2026.08.03', className: 'issued-field' },
       ]
     });
@@ -49,14 +93,15 @@ function PassportModal({ isOpen, onClose }) {
         <div className="passport-left-page">
           <div className="user-account-section">
             <span className="label-name">이름</span>
-            <h2 className="user-name">jimal</h2>
+            {/* 3. 하드코딩된 'jimal' 대신 state 변수 적용 */}
+            <h2 className="user-name">{username}</h2>
 
             <div className="account-buttons">
-              <button type="button" className="account-btn">
+              <button type="button" className="account-btn" onClick={handleLogout}>
                 <LogOut size={16} />
                 <span>로그아웃</span>
               </button>
-              <button type="button" className="account-btn danger">
+              <button type="button" className="account-btn danger" onClick={handleWithdraw}>
                 <UserX size={16} />
                 <span>회원탈퇴</span>
               </button>
@@ -72,7 +117,7 @@ function PassportModal({ isOpen, onClose }) {
           >
             <div className="ticket-overlay-field passenger-field">
               <span className="ticket-label">Passenger</span>
-              <span className="ticket-val">jimal</span>
+              <span className="ticket-val">{username}</span>
             </div>
 
             <div className="ticket-overlay-field issued-field">
@@ -82,7 +127,7 @@ function PassportModal({ isOpen, onClose }) {
 
             <div className="ticket-overlay-qr">
               <img
-                src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=MCM-VISIT-PASS-JIMAL"
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=MCM-VISIT-PASS-${username.toUpperCase()}`}
                 alt="QR Code"
               />
             </div>
