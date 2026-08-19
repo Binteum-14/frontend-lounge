@@ -283,24 +283,35 @@
     position: fixed;
     inset: 0;
     z-index: 30000;
+
     background: rgba(0, 0, 0, 0.12);
+
     display: flex;
-    align-items: center;
+
+    /* 아래를 기준으로 배치 */
+    align-items: flex-end;
     justify-content: flex-end;
+
+    /* 오른쪽 10px, 아래쪽 10px */
     padding-right: 10px;
+    padding-bottom: 10px;
+
     box-sizing: border-box;
 }
 
 .lounge-product-modal {
     position: relative;
-    bottom: -100px;
-    width: 400px;
+
+    width: 430px;
     min-height: 500px;
+
     padding: 20px 20px 10px;
     box-sizing: border-box;
+
     background: #ffffff;
     border: 1.5px solid #9b674e;
     border-radius: 25px;
+
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -322,7 +333,6 @@
     width: 280px;
     height: 250px;
     object-fit: contain;
-    margin-top: 5px;
 }
 
 .lounge-product-modal-name {
@@ -337,18 +347,18 @@
 .lounge-product-modal-price {
     width: 100%;
     margin-top: 10px;
-    font-size: 24px;
+    font-size: 20px;
     text-align: center;
     color: #111;
 }
 
 .lounge-product-modal-description {
     width: 100%;
-    margin-top: 35px;
+    margin-top: 15px;
     margin-bottom: 20px;
     padding-left: 5px;
     box-sizing: border-box;
-    font-size: 20px;
+    font-size: 18px;
     color: #111;
 }
 
@@ -367,10 +377,6 @@
     cursor: pointer;
     font-weight: 500;
 }
-
-/* =========================================
-   주문 전 drink.png
-========================================= */
 
 .lounge-drink-button {
     position: fixed;
@@ -441,43 +447,55 @@
 
 .lounge-ordered-drink {
     position: fixed;
-    z-index: 9998;
+    width: 320px;
+    height: 220px;
     margin: 0;
     padding: 0;
     border: none;
     background: transparent;
-
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
     cursor: pointer;
+    z-index: 500;
 }
+
 
 .lounge-ordered-drink-image {
     display: block;
-
-    width: 290px;
+    width: auto;
     height: auto;
     object-fit: contain;
-
     pointer-events: none;
 }
+
+/* 음료 */
+.lounge-ordered-item-drink {
+    width: 300px;
+    height: auto;
+}
+
+/* 간식 */
+.lounge-ordered-item-snack {
+    width: 250px;
+    height: auto;
+}
+
+/* 향수 */
+.lounge-ordered-item-perfume {
+    width: 170px;
+    max-height: 300px;
+}
+
 .lounge-ordered-drink-focus1 {
     left: 15%;
     bottom: 3%;
 }
 
-
-/* =========================================
-   Focus Lounge 2 주문 음료 위치
-========================================= */
-
 .lounge-ordered-drink-focus2 {
     left: 15%;
     bottom: 3%;
 }
-
-
-/* =========================================
-   MCM Lounge 주문 음료 위치
-========================================= */
 
 .lounge-ordered-drink-mcm {
     left: 15%;
@@ -811,6 +829,40 @@
 /* 사람 수 역시 위 */
 .lounge-people {
     z-index: 10000;
+}
+
+/* 기본으로 처음 떠있는 지갑 */
+.lounge-wallet-image {
+    display: block;
+    width: 200px;
+    height: auto;
+    object-fit: contain;
+    pointer-events: none;
+    transform: translate(30px, 50px);
+}
+
+/* 간식 API 연결 후 받아온 가방 이미지 */
+.lounge-wallet-image-api {
+    width: 500px;
+    height: auto;
+    transform: translate(230px, 80px);
+}
+
+/* =========================================
+   간식 선택 전 상품 팝업 문구
+========================================= */
+
+.lounge-product-empty {
+    width: 100%;
+    min-height: 460px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 400;
+    color: #834333;
+
+    text-align: center;
 }
 /* =========================================
    반응형

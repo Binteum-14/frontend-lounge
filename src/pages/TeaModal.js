@@ -8,10 +8,14 @@ import iceTeaImage from "../assets/images/icetea.png";
 import "../styles/TeaModal.css";
 
 function TeaModal({ onClose, onOrder }) {
-    const [activeCategory, setActiveCategory] = useState("drink");
+    const [activeCategory, setActiveCategory] =
+        useState("drink");
 
-    const [drinkItems, setDrinkItems] = useState([]);
-    const [selectedItem, setSelectedItem] = useState(null);
+    // API에서 받은 전체 간식 목록
+    const [items, setItems] = useState([]);
+
+    const [selectedItem, setSelectedItem] =
+        useState(null);
 
     useEffect(() => {
         const fetchSnacks = async () => {
@@ -29,15 +33,23 @@ function TeaModal({ onClose, onOrder }) {
                     response.isSuccess &&
                     Array.isArray(response.result)
                 ) {
-                    setDrinkItems(response.result);
+                    setItems(response.result);
 
-                    if (response.result.length > 0) {
+                    // 처음에는 음료 탭이므로
+                    // 첫 번째 DRINK를 자동 선택
+                    const firstDrink =
+                        response.result.find(
+                            (item) =>
+                                item.type === "DRINK"
+                        );
+
+                    if (firstDrink) {
                         setSelectedItem(
-                            response.result[0].snackId
+                            firstDrink.snackId
                         );
                     }
                 } else {
-                    setDrinkItems([]);
+                    setItems([]);
                 }
 
             } catch (error) {
@@ -46,21 +58,90 @@ function TeaModal({ onClose, onOrder }) {
                     error.response?.data || error
                 );
 
-                setDrinkItems([]);
+                setItems([]);
             }
         };
 
         fetchSnacks();
     }, []);
 
+    // =========================================
+    // 현재 탭에 맞는 type 변환
+    // =========================================
+    const getCategoryType = () => {
+        if (activeCategory === "drink") {
+            return "DRINK";
+        }
+
+        if (activeCategory === "food") {
+            return "SNACK";
+        }
+
+        if (activeCategory === "perfume") {
+            return "PERFUME";
+        }
+
+        return "";
+    };
+
+    // =========================================
+    // 현재 탭에 보여줄 항목만 필터링
+    // =========================================
+    const filteredItems = items.filter(
+        (item) =>
+            item.type === getCategoryType()
+    );
+
+    // =========================================
+    // 탭 변경
+    // =========================================
+    const handleCategoryChange = (category) => {
+        setActiveCategory(category);
+
+        let type = "";
+
+        if (category === "drink") {
+            type = "DRINK";
+        } else if (category === "food") {
+            type = "SNACK";
+        } else if (category === "perfume") {
+            type = "PERFUME";
+        }
+
+        // 바뀐 카테고리의 첫 번째 항목 자동 선택
+        const firstItem =
+            items.find(
+                (item) => item.type === type
+            );
+
+        if (firstItem) {
+            setSelectedItem(
+                firstItem.snackId
+            );
+        } else {
+            setSelectedItem(null);
+        }
+    };
+
     const handleOrder = async () => {
         if (!selectedItem) {
             return;
         }
 
+        // 현재 선택한 상품 정보
+        const selectedData = items.find(
+            (item) => item.snackId === selectedItem
+        );
+
+        if (!selectedData) {
+            return;
+        }
+
         try {
             const response = await get(
-                config.SNACK.DETAIL_GET(selectedItem)
+                config.SNACK.DETAIL_GET(
+                    selectedItem
+                )
             );
 
             console.log(
@@ -75,10 +156,25 @@ function TeaModal({ onClose, onOrder }) {
                 if (onOrder) {
                     onOrder({
                         snackId: selectedItem,
+
+                        // 상세 API 이미지
                         snackImageUrl:
                             response.result.snackImageUrl,
+
                         productImageUrl:
                             response.result.productImageUrl,
+                        productVariantId: response.result.productVariantId,
+
+                        // 목록 API에서 가져온 타입
+                        type:
+                            selectedData.type,
+
+                        name:
+                            selectedData.name,
+
+                        // 혹시 상세 API 이미지가 없을 때 사용 가능
+                        imageUrl:
+                            selectedData.imageUrl,
                     });
                 }
 
@@ -119,8 +215,11 @@ function TeaModal({ onClose, onOrder }) {
                     간식 주문
                 </h2>
 
-                {/* 카테고리 */}
+                {/* =====================================
+                    카테고리
+                ===================================== */}
                 <div className="tea-modal-tabs">
+
                     <button
                         type="button"
                         className={`tea-modal-tab ${
@@ -129,7 +228,9 @@ function TeaModal({ onClose, onOrder }) {
                                 : ""
                         }`}
                         onClick={() =>
-                            setActiveCategory("drink")
+                            handleCategoryChange(
+                                "drink"
+                            )
                         }
                     >
                         음료
@@ -143,7 +244,9 @@ function TeaModal({ onClose, onOrder }) {
                                 : ""
                         }`}
                         onClick={() =>
-                            setActiveCategory("food")
+                            handleCategoryChange(
+                                "food"
+                            )
                         }
                     >
                         식사
@@ -157,70 +260,71 @@ function TeaModal({ onClose, onOrder }) {
                                 : ""
                         }`}
                         onClick={() =>
-                            setActiveCategory("perfume")
+                            handleCategoryChange(
+                                "perfume"
+                            )
                         }
                     >
                         향수
                     </button>
+
                 </div>
 
-                {/* 음료 */}
-                {activeCategory === "drink" && (
-                    <div className="tea-modal-item-grid">
-                        {drinkItems.map((item) => (
-                            <button
-                                key={item.snackId}
-                                type="button"
-                                className={`tea-modal-item ${
-                                    selectedItem === item.snackId
-                                        ? "tea-modal-item-selected"
-                                        : ""
-                                }`}
-                                onClick={() =>
-                                    setSelectedItem(item.snackId)
-                                }
-                            >
-                                <div className="tea-modal-item-image-wrapper">
-                                    <img
-                                        className="tea-modal-item-image"
-                                        src={item.imageUrl || iceTeaImage}
-                                        alt={item.name}
-                                    />
-                                </div>
+                {/* =====================================
+                    현재 카테고리 상품
+                ===================================== */}
+                <div className="tea-modal-item-grid">
 
-                                <span className="tea-modal-item-name">
-                                    {item.name}
-                                </span>
-                            </button>
-                        ))}
-                    </div>
-                )}
+                    {filteredItems.map((item) => (
+                        <button
+                            key={item.snackId}
+                            type="button"
+                            className={`tea-modal-item ${
+                                selectedItem ===
+                                item.snackId
+                                    ? "tea-modal-item-selected"
+                                    : ""
+                            }`}
+                            onClick={() =>
+                                setSelectedItem(
+                                    item.snackId
+                                )
+                            }
+                        >
+                            <div className="tea-modal-item-image-wrapper">
 
-                {/* 식사 */}
-                {activeCategory === "food" && (
-                    <div className="tea-modal-empty">
-                        준비 중입니다.
-                    </div>
-                )}
+                                <img
+                                    className="tea-modal-item-image"
+                                    src={
+                                        item.imageUrl ||
+                                        iceTeaImage
+                                    }
+                                    alt={item.name}
+                                />
 
-                {/* 향수 */}
-                {activeCategory === "perfume" && (
-                    <div className="tea-modal-empty">
-                        준비 중입니다.
-                    </div>
-                )}
+                            </div>
 
-                {/* 주문하기 */}
+                            <span className="tea-modal-item-name">
+                                {item.name}
+                            </span>
+
+                        </button>
+                    ))}
+
+                </div>
+
+                {/* =====================================
+                    주문하기
+                ===================================== */}
                 <button
                     type="button"
                     className="tea-modal-order-button"
                     onClick={handleOrder}
-                    disabled={
-                        activeCategory !== "drink"
-                    }
+                    disabled={!selectedItem}
                 >
                     주문하기
                 </button>
+
             </div>
         </div>
     );

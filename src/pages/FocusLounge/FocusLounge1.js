@@ -6,6 +6,7 @@ import rightButton from "../../assets/images/rightbtn.png";
 import loungeIcon from "../../assets/images/sofa.png";
 import calendarIcon from "../../assets/images/calendar.png";
 import bookIcon from "../../assets/images/bookicon.png";
+import blurImage from "../../assets/images/blur.png";
 import "../../styles/FocusLounge.css";
 
 function FocusLounge1({
@@ -16,6 +17,7 @@ function FocusLounge1({
     openFlightModal,
     onFlightModalOpened,
     onTakeoff,
+    onSelectFlight,
     flightFocusSeconds,
 }) {
     const now = new Date();
@@ -53,21 +55,6 @@ function FocusLounge1({
         setSelectedFlight,
     ] = useState(0);
 
-    const handleImageLoad = () => {
-        const maxScroll =
-            document.documentElement
-                .scrollHeight -
-            window.innerHeight;
-
-        window.scrollTo({
-            top: maxScroll / 2,
-            behavior: "auto",
-        });
-    };
-
-    // =========================================
-    // 시간 조절
-    // =========================================
     const decreaseHour = () => {
         ensureMusicPlaying();
 
@@ -164,6 +151,25 @@ function FocusLounge1({
     };
 
     const [flights, setFlights] = useState([]);
+
+    const moveToMiddle = () => {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                const scrollElement =
+                    document.scrollingElement ||
+                    document.documentElement;
+
+                const maxScroll =
+                    scrollElement.scrollHeight -
+                    window.innerHeight;
+
+                scrollElement.scrollTo({
+                    top: maxScroll / 2,
+                    behavior: "auto",
+                });
+            });
+        });
+    };
 
     const fetchFlights = useCallback(async (focusMinutes) => {
         try {
@@ -266,49 +272,54 @@ function FocusLounge1({
             return;
         }
 
-        let focusMinutes = 0;
+        /*
+        * 결과 화면에서
+        * "공항으로 이동하기"를 누르면
+        * 항공편 추천 화면이 아니라
+        * 처음 목표 시간 설정 화면으로 돌아감
+        */
 
-        if (flightFocusSeconds > 0) {
-            const nextHours = Math.floor(
-                flightFocusSeconds / 3600
-            );
-
-            const nextMinutes = Math.floor(
-                (flightFocusSeconds % 3600) / 60
-            );
-
-            setHours(nextHours);
-            setMinutes(nextMinutes);
-
-            focusMinutes =
-                nextHours * 60 + nextMinutes;
-        }
-
-        fetchFlights(focusMinutes);
-
-        setModalStep("flight");
+        setModalStep("setting");
         setShowModal(true);
+
+        /*
+        * 이전 타이머 값도 초기화
+        */
+        setHours(0);
+        setMinutes(0);
+
+        /*
+        * 기본 장소는 라운지
+        */
+        setSelectedPlace("lounge");
+
+        /*
+        * 이전 항공편 선택 상태 초기화
+        */
+        setSelectedFlight(0);
+        setFlights([]);
 
         if (onFlightModalOpened) {
             onFlightModalOpened();
         }
     }, [
         openFlightModal,
-        flightFocusSeconds,
         onFlightModalOpened,
-        fetchFlights,
     ]);
 
     return (
         <div className="focus-lounge-page-wrapper">
-
             <img
                 className="focus-lounge-page"
                 src={focus1Background}
                 alt="Focus Lounge background"
-                onLoad={handleImageLoad}
+                onLoad={moveToMiddle}
             />
-
+            <img
+                className="focus-lounge-blur"
+                src={blurImage}
+                alt=""
+            />
             <button
                 className="focus-lounge-next-button"
                 type="button"
@@ -652,7 +663,20 @@ function FocusLounge1({
                                 onClick={() => {
                                     ensureMusicPlaying();
 
-                                    // 타이머 먼저 시작
+                                    /* 사용자가 선택한 항공편 */
+                                    const flight =
+                                        flights[selectedFlight];
+
+                                    if (
+                                        flight &&
+                                        onSelectFlight
+                                    ) {
+                                        onSelectFlight(
+                                            flight
+                                        );
+                                    }
+
+                                    /* 타이머 시작 */
                                     onStartTimer(
                                         hours,
                                         minutes
@@ -660,7 +684,7 @@ function FocusLounge1({
 
                                     setShowModal(false);
 
-                                    // 그 다음 Takeoff로 이동
+                                    /* Takeoff 이동 */
                                     if (onTakeoff) {
                                         onTakeoff();
                                     }
