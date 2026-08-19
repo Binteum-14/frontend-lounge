@@ -182,28 +182,6 @@ function Route() {
                     heartbeatRequestPromise =
                         currentHeartbeatPromise;
 
-                    const currentHeartbeatPromise =
-                        post(
-                            config.PRESENCE.HEARTBEAT,
-                            {
-                                themeType:
-                                    presenceTheme,
-                            },
-                            hasAccessToken
-                                ? {}
-                                : {
-                                    skipAuth: true,
-                                }
-                        );
-
-                    heartbeatRequestPromise =
-                        currentHeartbeatPromise;
-
-
-                    /* =========================================
-                    heartbeat 요청 정리
-                    ========================================= */
-
                     const cleanupHeartbeat = () => {
                         window.setTimeout(
                             () => {
