@@ -1,5 +1,4 @@
-import React from "react";
-
+import React, { useEffect } from "react";
 import focus2Background from "../../assets/images/focus2-background.mp4";
 import focus2Frame from "../../assets/images/focus2.png";
 import blurImage from "../../assets/images/blur.png";
@@ -12,17 +11,24 @@ function FocusLounge2({
     onPrev,
     onNext,
 }) {
-    const handleImageLoad = () => {
-        const maxScroll =
-            document.documentElement
-                .scrollHeight -
-            window.innerHeight;
+    const moveToMiddle = () => {
+        requestAnimationFrame(() => {
+            const scrollHeight = document.body.scrollHeight;
 
-        window.scrollTo({
-            top: maxScroll / 2,
-            behavior: "auto",
+            const middle =
+                (scrollHeight - window.innerHeight) / 2;
+
+            window.scrollTo({
+                top: Math.max(0, middle),
+                left: 0,
+                behavior: "auto",
+            });
         });
     };
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
 
     return (
         <div className="focus-lounge-container">
@@ -40,7 +46,7 @@ function FocusLounge2({
                 className="focus-lounge-overlay"
                 src={focus2Frame}
                 alt=""
-                onLoad={handleImageLoad}
+                onLoad={moveToMiddle}
             />
 
             <img

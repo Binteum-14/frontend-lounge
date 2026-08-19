@@ -143,26 +143,46 @@ const McmCheck = () => {
       );
 
       console.log("로그인 전체 응답:", response);
+      console.log("로그인 result:", response.result);
+      console.log(
+        "accessToken:",
+        response.result?.accessToken
+      );
 
       if (response.isSuccess) {
         console.log("로그인 성공");
 
-        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem(
+          "isLoggedIn",
+          "true"
+        );
 
         if (response.result?.accessToken) {
           localStorage.setItem(
             "accessToken",
             response.result.accessToken
           );
-        }
 
-        console.log("결과 화면으로 이동");
+          console.log(
+            "저장된 accessToken:",
+            localStorage.getItem(
+              "accessToken"
+            )
+          );
+        } else {
+          console.error(
+            "로그인은 성공했지만 accessToken이 응답에 없습니다."
+          );
+        }
 
         setShowResult(true);
         return;
       }
 
-      alert(response.message || "로그인에 실패했습니다.");
+      alert(
+        response.message ||
+        "로그인에 실패했습니다."
+      );
 
     } catch (error) {
       console.error(

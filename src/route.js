@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import html2canvas from "html2canvas";
-import { get } from "./api";
+
+import { get, post } from "./api";
 import config from "./config";
+
 import FocusLounge1 from "./pages/FocusLounge/FocusLounge1";
 import FocusLounge2 from "./pages/FocusLounge/FocusLounge2";
 import MCMLounge from "./pages/FocusLounge/MCMLounge";
@@ -21,55 +23,247 @@ import mcmbag from "./assets/images/mcmwallet.png";
 import iceTeaImage from "./assets/images/icetea.png";
 import drinkIcon from "./assets/images/drink.png";
 
-/* 성공 티켓 */
 import ticketImage from "./assets/images/ticket.png";
 
 import "./styles/Route.css";
 
 const TIMER_STORAGE_KEY = "focusLoungeTimer";
+let heartbeatRequestPromise = null;
+let lastHeartbeatKey = null;
 
 function Route() {
     const successTicketRef = useRef(null);
+    const audioRef = useRef(null);
+
     const [page, setPage] = useState("focus1");
+
+    /* =========================================
+       타이머
+    ========================================= */
 
     const [endTimeMs, setEndTimeMs] = useState(null);
     const [remainingSeconds, setRemainingSeconds] = useState(0);
-
-    /* 처음 설정했던 총 집중 시간 */
     const [totalFocusSeconds, setTotalFocusSeconds] = useState(0);
-
+    const [startedAt, setStartedAt] = useState(null);
     const [isPaused, setIsPaused] = useState(false);
+
     const pausedSecondsRef = useRef(0);
+    const pauseStartedAtRef = useRef(null);
+    const totalBreakSecondsRef = useRef(0);
+    const passSavedRef = useRef(false);
+
+    /* =========================================
+       선택한 항공편
+    ========================================= */
+
+    const [selectedFlightInfo, setSelectedFlightInfo] =
+        useState(null);
+
+    /* =========================================
+       음악
+    ========================================= */
 
     const [musicOn, setMusicOn] = useState(true);
 
-    /* 간식 팝업 */
+    /* =========================================
+       간식
+    ========================================= */
+
     const [showTeaModal, setShowTeaModal] = useState(false);
-
-    /* MCM 제품 팝업 */
-    const [showProductModal, setShowProductModal] = useState(false);
-    const [product, setProduct] = useState(null);
-    const [productLoading, setProductLoading] = useState(false);
-
-    /* 성공 화면 */
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
-    const [openFlightModal, setOpenFlightModal] = useState(false);
-
-    /* 타이머가 끝난 순간 어느 라운지에 있었는지 */
-    const [successPage, setSuccessPage] = useState("focus1");
-
-    /* 주문된 음료 */
     const [selectedDrink, setSelectedDrink] = useState(null);
 
-    /* 임시 라운지 인원 */
-    const [loungePeople] = useState(18);
+    /* =========================================
+       상품 팝업
+    ========================================= */
 
-    const audioRef = useRef(null);
+    const [showProductModal, setShowProductModal] =
+        useState(false);
 
-    const goTakeoff = () => {
-        ensureMusicPlaying();
-        setPage("takeoff");
-    };
+    const [product, setProduct] = useState(null);
+    const [productLoading, setProductLoading] =
+        useState(false);
+
+    /* =========================================
+       성공 화면
+    ========================================= */
+
+    const [showSuccessModal, setShowSuccessModal] =
+        useState(false);
+
+    const [openFlightModal, setOpenFlightModal] =
+        useState(false);
+
+    const [successPage, setSuccessPage] =
+        useState("focus1");
+
+    /* =========================================
+       Presence 현재 이용 인원
+    ========================================= */
+
+    const [loungePeople, setLoungePeople] = useState(0);
+    const [flightPeople, setFlightPeople] = useState(0);
+
+    /* =========================================
+    Presence Heartbeat
+
+    개발환경 StrictMode 중복 요청 방지
+    ========================================= */
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const themeType =
+            page === "takeoff"
+                ? "FLIGHT"
+                : "LOUNGE";
+
+        const sendHeartbeat = async () => {
+            const accessToken =
+                localStorage.getItem(
+                    "accessToken"
+                );
+
+            const hasAccessToken =
+                !!accessToken;
+
+            const heartbeatKey =
+                `${themeType}-${hasAccessToken ? "USER" : "GUEST"}`;
+
+            try {
+                console.log(
+                    "Heartbeat 요청 준비:",
+                    {
+                        themeType,
+                        hasAccessToken,
+                    }
+                );
+
+                /*
+                * 같은 heartbeat 요청이 이미 진행 중이면
+                * 새로운 요청을 만들지 않고
+                * 기존 요청 결과를 같이 기다림
+                *
+                * React StrictMode의
+                * 동시 2회 호출 방지
+                */
+                if (
+                    !heartbeatRequestPromise ||
+                    lastHeartbeatKey !== heartbeatKey
+                ) {
+                    lastHeartbeatKey =
+                        heartbeatKey;
+
+                    heartbeatRequestPromise =
+                        post(
+                            config.PRESENCE.HEARTBEAT,
+                            {
+                                themeType,
+                            },
+                            hasAccessToken
+                                ? {}
+                                : {
+                                    skipAuth: true,
+                                }
+                        ).finally(() => {
+                            /*
+                            * 약간의 시간 동안 Promise 유지
+                            * StrictMode 재마운트 대응
+                            */
+                            window.setTimeout(
+                                () => {
+                                    heartbeatRequestPromise =
+                                        null;
+                                },
+                                1000
+                            );
+                        });
+                } else {
+                    console.log(
+                        "중복 Heartbeat 요청 방지됨"
+                    );
+                }
+
+                const response =
+                    await heartbeatRequestPromise;
+
+                console.log(
+                    "Heartbeat API 응답:",
+                    response
+                );
+
+                if (!isMounted) {
+                    return;
+                }
+
+                if (
+                    response?.isSuccess &&
+                    response?.result
+                ) {
+                    const loungeCount =
+                        response.result.loungeCount;
+
+                    const flightCount =
+                        response.result.flightCount;
+
+                    if (
+                        typeof loungeCount ===
+                        "number"
+                    ) {
+                        setLoungePeople(
+                            loungeCount
+                        );
+                    }
+
+                    if (
+                        typeof flightCount ===
+                        "number"
+                    ) {
+                        setFlightPeople(
+                            flightCount
+                        );
+                    }
+
+                    console.log(
+                        "현재 라운지 인원:",
+                        loungeCount
+                    );
+
+                    console.log(
+                        "현재 비행기 인원:",
+                        flightCount
+                    );
+                }
+            } catch (error) {
+                console.error(
+                    "Heartbeat 요청 실패:",
+                    error.response?.data ||
+                    error
+                );
+            }
+        };
+
+        /*
+        * 진입 즉시
+        */
+        sendHeartbeat();
+
+        /*
+        * 1분마다
+        */
+        const heartbeatInterval =
+            window.setInterval(
+                sendHeartbeat,
+                60_000
+            );
+
+        return () => {
+            isMounted = false;
+
+            window.clearInterval(
+                heartbeatInterval
+            );
+        };
+    }, [page]);
 
     /* =========================================
        현재 페이지 BGM
@@ -96,78 +290,535 @@ function Route() {
     };
 
     /* =========================================
+       음악 재생 보장
+    ========================================= */
+
+    const ensureMusicPlaying = () => {
+        const audio =
+            audioRef.current;
+
+        if (!audio || !musicOn) {
+            return;
+        }
+
+        if (audio.paused) {
+            audio.volume = 0.5;
+
+            audio.play().catch(
+                (error) => {
+                    console.log(
+                        "BGM 재생 실패:",
+                        error
+                    );
+                }
+            );
+        }
+    };
+
+    /* =========================================
+       페이지 변경 시 BGM 변경
+    ========================================= */
+
+    useEffect(() => {
+        const audio =
+            audioRef.current;
+
+        if (!audio) {
+            return;
+        }
+
+        audio.pause();
+        audio.currentTime = 0;
+
+        if (!musicOn) {
+            return;
+        }
+
+        audio.load();
+        audio.volume = 0.5;
+
+        audio.play().catch(
+            (error) => {
+                console.log(
+                    "BGM 자동재생 실패:",
+                    error
+                );
+            }
+        );
+    }, [page, musicOn]);
+
+    /* =========================================
+       로컬 날짜 문자열
+    ========================================= */
+
+    const getLocalDateTime = (
+        date = new Date()
+    ) => {
+        const year =
+            date.getFullYear();
+
+        const month =
+            String(
+                date.getMonth() + 1
+            ).padStart(2, "0");
+
+        const day =
+            String(
+                date.getDate()
+            ).padStart(2, "0");
+
+        const hours =
+            String(
+                date.getHours()
+            ).padStart(2, "0");
+
+        const minutes =
+            String(
+                date.getMinutes()
+            ).padStart(2, "0");
+
+        const seconds =
+            String(
+                date.getSeconds()
+            ).padStart(2, "0");
+
+        return (
+            `${year}-${month}-${day}` +
+            `T${hours}:${minutes}:${seconds}`
+        );
+    };
+
+    /* =========================================
        저장된 타이머 불러오기
     ========================================= */
 
     useEffect(() => {
         try {
             const savedTimer =
-                localStorage.getItem(TIMER_STORAGE_KEY);
+                localStorage.getItem(
+                    TIMER_STORAGE_KEY
+                );
 
             if (!savedTimer) {
                 return;
             }
 
-            const parsedTimer = JSON.parse(savedTimer);
+            const parsedTimer =
+                JSON.parse(
+                    savedTimer
+                );
 
-            if (!parsedTimer?.endTimeMs) {
+            if (
+                !parsedTimer?.endTimeMs
+            ) {
                 return;
             }
 
-            const diffSeconds = Math.ceil(
-                (parsedTimer.endTimeMs - Date.now()) / 1000
-            );
+            const diffSeconds =
+                Math.ceil(
+                    (
+                        parsedTimer.endTimeMs -
+                        Date.now()
+                    ) / 1000
+                );
 
             if (diffSeconds > 0) {
-                setEndTimeMs(parsedTimer.endTimeMs);
-                setRemainingSeconds(diffSeconds);
+                setEndTimeMs(
+                    parsedTimer.endTimeMs
+                );
+
+                setRemainingSeconds(
+                    diffSeconds
+                );
 
                 setTotalFocusSeconds(
-                    parsedTimer.totalFocusSeconds || diffSeconds
+                    parsedTimer
+                        .totalFocusSeconds ||
+                    diffSeconds
                 );
+
+                if (
+                    parsedTimer.startedAt
+                ) {
+                    setStartedAt(
+                        parsedTimer.startedAt
+                    );
+                }
             } else {
-                localStorage.removeItem(TIMER_STORAGE_KEY);
+                localStorage.removeItem(
+                    TIMER_STORAGE_KEY
+                );
             }
         } catch (error) {
-            localStorage.removeItem(TIMER_STORAGE_KEY);
+            console.error(
+                "저장된 타이머 불러오기 실패:",
+                error
+            );
+
+            localStorage.removeItem(
+                TIMER_STORAGE_KEY
+            );
         }
     }, []);
+
+    /* =========================================
+       타이머 시작
+    ========================================= */
+
+    const startTimer = (
+        hours,
+        minutes
+    ) => {
+        ensureMusicPlaying();
+
+        const totalSeconds =
+            (
+                hours * 60 +
+                minutes
+            ) * 60;
+
+        if (totalSeconds <= 0) {
+            return;
+        }
+
+        const startDateTime =
+            getLocalDateTime();
+
+        setStartedAt(
+            startDateTime
+        );
+
+        totalBreakSecondsRef.current = 0;
+        pauseStartedAtRef.current = null;
+        passSavedRef.current = false;
+
+        const nextEndTimeMs =
+            Date.now() +
+            totalSeconds * 1000;
+
+        setEndTimeMs(
+            nextEndTimeMs
+        );
+
+        setRemainingSeconds(
+            totalSeconds
+        );
+
+        setTotalFocusSeconds(
+            totalSeconds
+        );
+
+        setIsPaused(false);
+        pausedSecondsRef.current = 0;
+
+        setShowSuccessModal(
+            false
+        );
+
+        localStorage.setItem(
+            TIMER_STORAGE_KEY,
+            JSON.stringify({
+                endTimeMs:
+                    nextEndTimeMs,
+                totalFocusSeconds:
+                    totalSeconds,
+                startedAt:
+                    startDateTime,
+            })
+        );
+    };
+
+    /* =========================================
+       일시정지 / 재시작
+    ========================================= */
+
+    const togglePause = () => {
+        ensureMusicPlaying();
+
+        if (
+            remainingSeconds <= 0
+        ) {
+            return;
+        }
+
+        if (!isPaused) {
+            pausedSecondsRef.current =
+                remainingSeconds;
+
+            pauseStartedAtRef.current =
+                Date.now();
+
+            setIsPaused(true);
+
+            localStorage.removeItem(
+                TIMER_STORAGE_KEY
+            );
+
+            return;
+        }
+
+        const resumeSeconds =
+            pausedSecondsRef.current;
+
+        if (
+            pauseStartedAtRef.current
+        ) {
+            const breakSeconds =
+                Math.floor(
+                    (
+                        Date.now() -
+                        pauseStartedAtRef.current
+                    ) / 1000
+                );
+
+            totalBreakSecondsRef.current +=
+                breakSeconds;
+
+            pauseStartedAtRef.current =
+                null;
+        }
+
+        if (
+            resumeSeconds <= 0
+        ) {
+            return;
+        }
+
+        const nextEndTimeMs =
+            Date.now() +
+            resumeSeconds * 1000;
+
+        setEndTimeMs(
+            nextEndTimeMs
+        );
+
+        setRemainingSeconds(
+            resumeSeconds
+        );
+
+        setIsPaused(false);
+
+        localStorage.setItem(
+            TIMER_STORAGE_KEY,
+            JSON.stringify({
+                endTimeMs:
+                    nextEndTimeMs,
+                totalFocusSeconds:
+                    totalFocusSeconds,
+                startedAt:
+                    startedAt,
+            })
+        );
+    };
+
+    const saveFocusPass = useCallback(async (
+        finishedPage
+    ) => {
+
+        /* =========================================
+        게스트는 포커스 기록 저장 X
+        ========================================= */
+
+        const accessToken =
+            localStorage.getItem(
+                "accessToken"
+            );
+
+        if (!accessToken) {
+            console.log(
+                "게스트 사용자이므로 포커스 기록을 저장하지 않습니다."
+            );
+
+            return;
+        }
+
+
+        if (
+            passSavedRef.current
+        ) {
+            return;
+        }
+
+
+        if (!startedAt) {
+            console.error(
+                "포커스 패스 저장 실패: 시작 시간이 없습니다."
+            );
+
+            return;
+        }
+
+
+        passSavedRef.current =
+            true;
+
+
+        let breakSeconds =
+            totalBreakSecondsRef.current;
+
+
+        if (
+            isPaused &&
+            pauseStartedAtRef.current
+        ) {
+
+            breakSeconds +=
+                Math.floor(
+                    (
+                        Date.now() -
+                        pauseStartedAtRef.current
+                    ) / 1000
+                );
+        }
+
+
+        const isFlight =
+            finishedPage ===
+            "takeoff";
+
+
+        const requestBody = {
+
+            themeType:
+                isFlight
+                    ? "FLIGHT"
+                    : "LOUNGE",
+
+            allMinutes:
+                Math.floor(
+                    (
+                        totalFocusSeconds +
+                        breakSeconds
+                    ) / 60
+                ),
+
+            studySeconds:
+                totalFocusSeconds,
+
+            breaksSeconds:
+                breakSeconds,
+
+            startedAt:
+                startedAt,
+
+            endedAt:
+                getLocalDateTime(),
+        };
+
+
+        if (
+            isFlight &&
+            selectedFlightInfo
+        ) {
+
+            requestBody.flightNumber =
+                selectedFlightInfo
+                    .flightNumber;
+
+            requestBody.departureAirport =
+                selectedFlightInfo
+                    .departureAirportCode;
+
+            requestBody.arrivalAirport =
+                selectedFlightInfo
+                    .arrivalAirportCode;
+
+            requestBody.departureTime =
+                selectedFlightInfo
+                    .departureTime;
+        }
+
+
+        console.log(
+            "포커스 패스 API URL:",
+            config
+                .FOCUSRECORD
+                .PASS_POST
+        );
+
+        console.log(
+            "포커스 패스 요청값:",
+            requestBody
+        );
+
+
+        try {
+
+            const response =
+                await post(
+                    config
+                        .FOCUSRECORD
+                        .PASS_POST,
+                    requestBody
+                );
+
+
+            console.log(
+                "포커스 패스 저장 성공:",
+                response
+            );
+
+            } catch (error) {
+                console.error(
+                    "포커스 패스 저장 실패:",
+                    error.response?.data ||
+                    error
+                );
+
+                passSavedRef.current =
+                    false;
+            }
+        }, [
+            startedAt,
+            isPaused,
+            totalFocusSeconds,
+            selectedFlightInfo,
+        ]);
 
     /* =========================================
        타이머 카운트다운
     ========================================= */
 
     useEffect(() => {
-        if (!endTimeMs || isPaused) {
+        if (
+            !endTimeMs ||
+            isPaused
+        ) {
             return undefined;
         }
 
         const updateTimer = () => {
-            const diffSeconds = Math.max(
-                0,
-                Math.ceil(
-                    (endTimeMs - Date.now()) / 1000
-                )
+            const diffSeconds =
+                Math.max(
+                    0,
+                    Math.ceil(
+                        (
+                            endTimeMs -
+                            Date.now()
+                        ) / 1000
+                    )
+                );
+
+            setRemainingSeconds(
+                diffSeconds
             );
 
-            setRemainingSeconds(diffSeconds);
-
-            /* ================================
-               타이머 종료
-            ================================= */
-
-            if (diffSeconds === 0) {
+            if (
+                diffSeconds === 0
+            ) {
                 setEndTimeMs(null);
                 setRemainingSeconds(0);
-
                 setIsPaused(false);
+
                 pausedSecondsRef.current = 0;
 
-                /* 현재 보고 있던 페이지 저장 */
                 setSuccessPage(page);
 
-                /* 성공 화면 열기 */
-                setShowSuccessModal(true);
+                saveFocusPass(page);
+
+                setShowSuccessModal(
+                    true
+                );
 
                 localStorage.removeItem(
                     TIMER_STORAGE_KEY
@@ -184,154 +835,24 @@ function Route() {
             );
 
         return () => {
-            window.clearInterval(intervalId);
+            window.clearInterval(
+                intervalId
+            );
         };
     }, [
         endTimeMs,
         isPaused,
         page,
+        saveFocusPass,
     ]);
-
-    /* =========================================
-       페이지 변경 시 BGM 변경
-    ========================================= */
-
-    useEffect(() => {
-        const audio = audioRef.current;
-
-        if (!audio) {
-            return;
-        }
-
-        audio.pause();
-        audio.currentTime = 0;
-
-        if (!musicOn) {
-            return;
-        }
-
-        audio.load();
-        audio.volume = 0.5;
-
-        audio.play().catch((error) => {
-            console.log(
-                "BGM 자동재생 실패:",
-                error
-            );
-        });
-    }, [page, musicOn]);
-
-    /* =========================================
-       사용자 클릭 시 음악 재생
-    ========================================= */
-
-    const ensureMusicPlaying = () => {
-        const audio = audioRef.current;
-
-        if (!audio || !musicOn) {
-            return;
-        }
-
-        if (audio.paused) {
-            audio.volume = 0.5;
-
-            audio.play().catch((error) => {
-                console.log(
-                    "BGM 재생 실패:",
-                    error
-                );
-            });
-        }
-    };
-
-    /* =========================================
-       타이머 시작
-    ========================================= */
-
-    const startTimer = (hours, minutes) => {
-        ensureMusicPlaying();
-
-        const totalSeconds =
-            (hours * 60 + minutes) * 60;
-
-        if (totalSeconds <= 0) {
-            return;
-        }
-
-        const nextEndTimeMs =
-            Date.now() +
-            totalSeconds * 1000;
-
-        setEndTimeMs(nextEndTimeMs);
-        setRemainingSeconds(totalSeconds);
-
-        /* 성공 티켓에 표시할 총 시간 저장 */
-        setTotalFocusSeconds(totalSeconds);
-
-        setIsPaused(false);
-        pausedSecondsRef.current = 0;
-
-        /* 새로운 타이머 시작하면 성공창 닫기 */
-        setShowSuccessModal(false);
-
-        localStorage.setItem(
-            TIMER_STORAGE_KEY,
-            JSON.stringify({
-                endTimeMs: nextEndTimeMs,
-                totalFocusSeconds: totalSeconds,
-            })
-        );
-    };
-
-    const togglePause = () => {
-        ensureMusicPlaying();
-
-        if (remainingSeconds <= 0) {
-            return;
-        }
-
-        if (!isPaused) {
-            pausedSecondsRef.current =
-                remainingSeconds;
-
-            setIsPaused(true);
-
-            localStorage.removeItem(
-                TIMER_STORAGE_KEY
-            );
-        } else {
-            const resumeSeconds =
-                pausedSecondsRef.current;
-
-            if (resumeSeconds <= 0) {
-                return;
-            }
-
-            const nextEndTimeMs =
-                Date.now() +
-                resumeSeconds * 1000;
-
-            setEndTimeMs(nextEndTimeMs);
-            setRemainingSeconds(resumeSeconds);
-            setIsPaused(false);
-
-            localStorage.setItem(
-                TIMER_STORAGE_KEY,
-                JSON.stringify({
-                    endTimeMs: nextEndTimeMs,
-                    totalFocusSeconds:
-                        totalFocusSeconds,
-                })
-            );
-        }
-    };
 
     /* =========================================
        음악 ON / OFF
     ========================================= */
 
     const toggleMusic = () => {
-        const audio = audioRef.current;
+        const audio =
+            audioRef.current;
 
         if (!audio) {
             return;
@@ -345,152 +866,185 @@ function Route() {
 
             audio.volume = 0.5;
 
-            audio.play().catch((error) => {
-                console.log(
-                    "BGM 재생 실패:",
-                    error
-                );
-            });
+            audio.play().catch(
+                (error) => {
+                    console.log(
+                        "BGM 재생 실패:",
+                        error
+                    );
+                }
+            );
         }
     };
 
-    const fetchProductDetail = async (productId) => {
+    /* =========================================
+       간식에서 연결된 상품 ID
+    ========================================= */
+
+    const getSelectedProductId = () => {
+        if (!selectedDrink) {
+            return 1;
+        }
+
+        if (
+            selectedDrink.productId !==
+                undefined &&
+            selectedDrink.productId !==
+                null
+        ) {
+            return (
+                selectedDrink.productId
+            );
+        }
+
+        if (
+            selectedDrink.productVariantId !==
+                undefined &&
+            selectedDrink.productVariantId !==
+                null
+        ) {
+            return (
+                selectedDrink
+                    .productVariantId
+            );
+        }
+
+        if (
+            selectedDrink
+                .product
+                ?.productId !==
+                undefined &&
+            selectedDrink
+                .product
+                ?.productId !==
+                null
+        ) {
+            return (
+                selectedDrink
+                    .product
+                    .productId
+            );
+        }
+
+        return 1;
+    };
+
+    /* =========================================
+       상품 상세 API
+    ========================================= */
+
+    const fetchProductDetail = async (
+        productId
+    ) => {
         try {
             setProductLoading(true);
+            setProduct(null);
 
-            const response = await get(
-                config.PRODUCT.DETAIL_GET(productId)
+            const url =
+                config
+                    .PRODUCT
+                    .DETAIL_GET(
+                        productId
+                    );
+
+            console.log(
+                "상품 상세 요청 ID:",
+                productId
             );
 
-            console.log("상품 상세 API 응답:", response);
+            console.log(
+                "상품 상세 요청 URL:",
+                url
+            );
+
+            const response =
+                await get(url);
+
+            console.log(
+                "상품 상세 API 응답:",
+                response
+            );
 
             if (
-                response.isSuccess &&
-                response.result
+                response?.isSuccess &&
+                response?.result
             ) {
-                setProduct(response.result);
+                setProduct(
+                    response.result
+                );
             } else {
+                console.error(
+                    "상품 상세 조회 응답 오류:",
+                    response
+                );
+
                 setProduct(null);
             }
-
         } catch (error) {
             console.error(
                 "상품 상세 조회 실패:",
-                error.response?.data || error
+                error.response?.data ||
+                error
             );
 
             setProduct(null);
         } finally {
-            setProductLoading(false);
-        }
-    };
-
-    /* =========================================
-       현재 타이머 표시
-    ========================================= */
-
-    const formatTime = (seconds) => {
-        const safeSeconds =
-            Math.max(0, seconds);
-
-        const hours =
-            Math.floor(
-                safeSeconds / 3600
+            setProductLoading(
+                false
             );
-
-        const minutes =
-            Math.floor(
-                (safeSeconds % 3600) / 60
-            );
-
-        const secs =
-            safeSeconds % 60;
-
-        return `${String(hours).padStart(
-            2,
-            "0"
-        )}:${String(minutes).padStart(
-            2,
-            "0"
-        )}:${String(secs).padStart(
-            2,
-            "0"
-        )}`;
+        }
     };
 
     /* =========================================
-       성공 티켓용 총 시간
+       지갑 클릭
     ========================================= */
 
-    const formatSuccessTime = (seconds) => {
-        const hours =
-            Math.floor(seconds / 3600);
+    const handleProductClick = () => {
+        ensureMusicPlaying();
 
-        const minutes =
-            Math.floor(
-                (seconds % 3600) / 60
-            );
+        const productId =
+            getSelectedProductId();
 
-        const secs =
-            seconds % 60;
+        console.log(
+            "현재 selectedDrink:",
+            selectedDrink
+        );
 
-        return `${String(hours).padStart(
-            2,
-            "0"
-        )}:${String(minutes).padStart(
-            2,
-            "0"
-        )}:${String(secs).padStart(
-            2,
-            "0"
-        )}`;
+        console.log(
+            "사용할 productId:",
+            productId
+        );
+
+        setShowProductModal(
+            true
+        );
+
+        fetchProductDetail(
+            productId
+        );
     };
 
     /* =========================================
-       성공 티켓 날짜
+       음료 주문 완료
     ========================================= */
 
-    const getTodayDate = () => {
-        const today = new Date();
+    const handleDrinkOrder = (
+        drink
+    ) => {
+        console.log(
+            "Route에서 받은 주문 상품:",
+            drink
+        );
 
-        const year =
-            today.getFullYear();
+        setSelectedDrink(
+            drink
+        );
 
-        const month =
-            String(
-                today.getMonth() + 1
-            ).padStart(2, "0");
+        setShowTeaModal(
+            false
+        );
 
-        const day =
-            String(
-                today.getDate()
-            ).padStart(2, "0");
-
-        return `${year}.${month}.${day}`;
-    };
-
-    /* =========================================
-       성공 티켓 장소
-    ========================================= */
-
-    const getSuccessPlace = () => {
-        if (successPage === "focus1") {
-            return "공항라운지1";
-        }
-
-        if (successPage === "focus2") {
-            return "공항라운지2";
-        }
-
-        if (successPage === "mcm") {
-            return "mcmLounge";
-        }
-
-        if (successPage === "takeoff") {
-            return "비행기";
-        }
-
-        return "";
+        setProduct(null);
     };
 
     /* =========================================
@@ -512,45 +1066,227 @@ function Route() {
         setPage("mcm");
     };
 
+    const goTakeoff = () => {
+        ensureMusicPlaying();
+        setPage("takeoff");
+    };
+
     /* =========================================
-       음료 주문 완료
+       시간 표시
     ========================================= */
 
-    const handleDrinkOrder = (drink) => {
-        setSelectedDrink(drink);
-        setShowTeaModal(false);
-    };
-
-    const handleSaveTicket = async () => {
-        if (!successTicketRef.current) {
-            return;
-        }
-
-        try {
-            const canvas = await html2canvas(
-                successTicketRef.current,
-                {
-                    backgroundColor: null,
-                    scale: 2,
-                    useCORS: true,
-                }
+    const formatTime = (
+        seconds
+    ) => {
+        const safeSeconds =
+            Math.max(
+                0,
+                seconds
             );
 
-            const image = canvas.toDataURL("image/png");
+        const hours =
+            Math.floor(
+                safeSeconds /
+                3600
+            );
 
-            const link = document.createElement("a");
+        const minutes =
+            Math.floor(
+                (
+                    safeSeconds %
+                    3600
+                ) / 60
+            );
 
-            link.href = image;
-            link.download = "focus-success-ticket.png";
+        const secs =
+            safeSeconds % 60;
 
-            link.click();
-        } catch (error) {
-            console.log("티켓 이미지 저장 실패:", error);
-        }
+        return (
+            `${String(hours).padStart(
+                2,
+                "0"
+            )}:` +
+            `${String(minutes).padStart(
+                2,
+                "0"
+            )}:` +
+            `${String(secs).padStart(
+                2,
+                "0"
+            )}`
+        );
     };
+
+    const formatSuccessTime = (
+        seconds
+    ) => {
+        const hours =
+            Math.floor(
+                seconds /
+                3600
+            );
+
+        const minutes =
+            Math.floor(
+                (
+                    seconds %
+                    3600
+                ) / 60
+            );
+
+        const secs =
+            seconds % 60;
+
+        return (
+            `${String(hours).padStart(
+                2,
+                "0"
+            )}:` +
+            `${String(minutes).padStart(
+                2,
+                "0"
+            )}:` +
+            `${String(secs).padStart(
+                2,
+                "0"
+            )}`
+        );
+    };
+
+    /* =========================================
+       오늘 날짜
+    ========================================= */
+
+    const getTodayDate = () => {
+        const today =
+            new Date();
+
+        const year =
+            today.getFullYear();
+
+        const month =
+            String(
+                today.getMonth() + 1
+            ).padStart(2, "0");
+
+        const day =
+            String(
+                today.getDate()
+            ).padStart(2, "0");
+
+        return (
+            `${year}.${month}.${day}`
+        );
+    };
+
+    /* =========================================
+       성공 장소
+    ========================================= */
+
+    const getSuccessPlace = () => {
+        if (
+            successPage === "focus1"
+        ) {
+            return "공항라운지1";
+        }
+
+        if (
+            successPage === "focus2"
+        ) {
+            return "공항라운지2";
+        }
+
+        if (
+            successPage === "mcm"
+        ) {
+            return "mcmLounge";
+        }
+
+        if (
+            successPage === "takeoff"
+        ) {
+            return "비행기";
+        }
+
+        return "";
+    };
+
+    /* =========================================
+       티켓 저장
+    ========================================= */
+
+    const handleSaveTicket =
+        async () => {
+            if (
+                !successTicketRef.current
+            ) {
+                return;
+            }
+
+            try {
+                const canvas =
+                    await html2canvas(
+                        successTicketRef.current,
+                        {
+                            backgroundColor:
+                                null,
+                            scale: 2,
+                            useCORS: true,
+                        }
+                    );
+
+                const image =
+                    canvas.toDataURL(
+                        "image/png"
+                    );
+
+                const link =
+                    document.createElement(
+                        "a"
+                    );
+
+                link.href = image;
+                link.download =
+                    "focus-success-ticket.png";
+
+                link.click();
+            } catch (error) {
+                console.log(
+                    "티켓 이미지 저장 실패:",
+                    error
+                );
+            }
+        };
 
     const timerActive =
         remainingSeconds > 0;
+
+    /* =========================================
+       상품 모달 값
+    ========================================= */
+
+    const productImageUrl =
+        product?.imageUrl ||
+        product?.productImageUrl ||
+        selectedDrink?.productImageUrl ||
+        mcmbag;
+
+    const productName =
+        product?.name ||
+        product?.productName ||
+        "MCM Product";
+
+    const productDescription =
+        product?.description ||
+        product?.productDescription ||
+        product?.detail ||
+        "상품 설명이 없습니다.";
+
+    const productDetailUrl =
+        product?.detailUrl ||
+        product?.productUrl ||
+        product?.url ||
+        product?.homepageUrl;
 
     return (
         <div className="lounge-route">
@@ -564,10 +1300,7 @@ function Route() {
                 src={getCurrentBgm()}
             />
 
-            {/* =========================================
-                라운지 인원
-            ========================================= */}
-
+            {/* 현재 이용 인원 */}
             <div className="lounge-people">
 
                 <div className="lounge-people-icon">
@@ -579,7 +1312,11 @@ function Route() {
                 </div>
 
                 <div className="lounge-people-title">
-                    라운지 전체
+                    {
+                        page === "takeoff"
+                            ? "비행기 전체"
+                            : "라운지 전체"
+                    }
                 </div>
 
                 <div className="lounge-people-divider" />
@@ -587,7 +1324,11 @@ function Route() {
                 <div className="lounge-people-count">
 
                     <span className="lounge-people-number">
-                        {loungePeople}명
+                        {
+                            page === "takeoff"
+                                ? flightPeople
+                                : loungePeople
+                        }명
                     </span>
 
                     <span className="lounge-people-text">
@@ -595,20 +1336,18 @@ function Route() {
                     </span>
 
                 </div>
-
             </div>
 
-            {/* =========================================
-                공통 타이머
-            ========================================= */}
-
+            {/* 공통 타이머 */}
             {timerActive && (
                 <div
-                    className={`lounge-timer ${
-                        isPaused
-                            ? "lounge-timer-paused"
-                            : "lounge-timer-running"
-                    }`}
+                    className={
+                        `lounge-timer ${
+                            isPaused
+                                ? "lounge-timer-paused"
+                                : "lounge-timer-running"
+                        }`
+                    }
                 >
 
                     <div className="lounge-timer-header">
@@ -618,11 +1357,13 @@ function Route() {
                         </span>
 
                         <span
-                            className={`lounge-timer-status ${
-                                isPaused
-                                    ? "lounge-timer-status-paused"
-                                    : "lounge-timer-status-running"
-                            }`}
+                            className={
+                                `lounge-timer-status ${
+                                    isPaused
+                                        ? "lounge-timer-status-paused"
+                                        : "lounge-timer-status-running"
+                                }`
+                            }
                         >
                             ●
                         </span>
@@ -639,11 +1380,13 @@ function Route() {
 
                         <button
                             type="button"
-                            className={`lounge-control-button lounge-music-button ${
-                                musicOn
-                                    ? "lounge-music-button-on"
-                                    : "lounge-music-button-off"
-                            }`}
+                            className={
+                                `lounge-control-button lounge-music-button ${
+                                    musicOn
+                                        ? "lounge-music-button-on"
+                                        : "lounge-music-button-off"
+                                }`
+                            }
                             onClick={toggleMusic}
                         >
 
@@ -666,9 +1409,11 @@ function Route() {
                             </span>
 
                             <span className="lounge-music-state">
-                                {musicOn
-                                    ? "ON"
-                                    : "OFF"}
+                                {
+                                    musicOn
+                                        ? "ON"
+                                        : "OFF"
+                                }
                             </span>
 
                         </button>
@@ -680,55 +1425,58 @@ function Route() {
                         >
 
                             <span className="lounge-pause-icon">
-                                {isPaused
-                                    ? "▶"
-                                    : "Ⅱ"}
+                                {
+                                    isPaused
+                                        ? "▶"
+                                        : "Ⅱ"
+                                }
                             </span>
 
                             <span className="lounge-pause-text">
-                                {isPaused
-                                    ? "다시 시작"
-                                    : "일시정지"}
+                                {
+                                    isPaused
+                                        ? "다시 시작"
+                                        : "일시정지"
+                                }
                             </span>
 
                         </button>
 
                     </div>
-
                 </div>
             )}
 
-            {/* =========================================
-                MCM 가방
-            ========================================= */}
-
+            {/* MCM 지갑 */}
             <button
                 type="button"
-                className={`lounge-wallet-wrapper lounge-wallet-wrapper-${page}`}
-                onClick={() => {
-                    fetchProductDetail(1);
-                    setShowProductModal(true);
-                }}
+                className={
+                    `lounge-wallet-wrapper lounge-wallet-wrapper-${page}`
+                }
+                onClick={handleProductClick}
                 aria-label="MCM 제품 정보 보기"
             >
                 <img
                     className="lounge-wallet-image"
-                    src={mcmbag}
+                    src={
+                        selectedDrink?.productImageUrl ||
+                        mcmbag
+                    }
                     alt="MCM Bag"
                 />
             </button>
 
-            {/* =========================================
-                주문 전 drink.png
-            ========================================= */}
-
+            {/* 주문 전 점선 물병 */}
             {!selectedDrink && (
                 <button
                     type="button"
-                    className={`lounge-drink-button lounge-drink-button-${page}`}
-                    onClick={() =>
-                        setShowTeaModal(true)
+                    className={
+                        `lounge-drink-button lounge-drink-button-${page}`
                     }
+                    onClick={() => {
+                        ensureMusicPlaying();
+                        setShowTeaModal(true);
+                    }}
+                    aria-label="간식 주문"
                 >
                     <img
                         className="lounge-drink-image"
@@ -738,33 +1486,42 @@ function Route() {
                 </button>
             )}
 
-            {/* =========================================
-                주문 후 음료
-            ========================================= */}
-
+            {/* 주문 후 음료 */}
             {selectedDrink && (
                 <button
                     type="button"
-                    className={`lounge-ordered-drink lounge-ordered-drink-${page}`}
-                    onClick={() =>
-                        setShowTeaModal(true)
+                    className={
+                        `lounge-ordered-drink lounge-ordered-drink-${page}`
                     }
+                    onClick={() => {
+                        ensureMusicPlaying();
+                        setShowTeaModal(true);
+                    }}
                 >
                     <img
-                        className="lounge-ordered-drink-image"
+                        className={
+                            `lounge-ordered-drink-image ${
+                                selectedDrink.type === "PERFUME"
+                                    ? "lounge-ordered-item-perfume"
+                                    : selectedDrink.type === "SNACK"
+                                    ? "lounge-ordered-item-snack"
+                                    : "lounge-ordered-item-drink"
+                            }`
+                        }
                         src={
                             selectedDrink.snackImageUrl ||
+                            selectedDrink.imageUrl ||
                             iceTeaImage
                         }
-                        alt="주문한 간식"
+                        alt={
+                            selectedDrink.name ||
+                            "주문한 간식"
+                        }
                     />
                 </button>
             )}
 
-            {/* =========================================
-                간식 팝업
-            ========================================= */}
-
+            {/* Snack 팝업 */}
             {showTeaModal && (
                 <TeaModal
                     onClose={() =>
@@ -774,6 +1531,7 @@ function Route() {
                 />
             )}
 
+            {/* 상품 상세 팝업 */}
             {showProductModal && (
                 <div
                     className="lounge-product-modal-overlay"
@@ -781,25 +1539,24 @@ function Route() {
                         setShowProductModal(false)
                     }
                 >
-
                     <div
                         className="lounge-product-modal"
                         onClick={(event) =>
                             event.stopPropagation()
                         }
                     >
-
                         <button
                             type="button"
                             className="lounge-product-modal-close"
                             onClick={() =>
                                 setShowProductModal(false)
                             }
+                            aria-label="상품 팝업 닫기"
                         >
                             ×
                         </button>
 
-                       {productLoading ? (
+                        {productLoading ? (
                             <div>
                                 상품 정보를 불러오는 중입니다...
                             </div>
@@ -807,32 +1564,52 @@ function Route() {
                             <>
                                 <img
                                     className="lounge-product-modal-image"
-                                    src={product.imageUrl}
-                                    alt={product.name}
+                                    src={productImageUrl}
+                                    alt={productName}
                                 />
 
                                 <div className="lounge-product-modal-name">
-                                    {product.name}
+                                    {productName}
                                 </div>
 
                                 <div className="lounge-product-modal-price">
-                                    ₩ {product.price?.toLocaleString()}
+                                    {
+                                        product.price !== undefined &&
+                                        product.price !== null
+                                            ? `₩ ${Number(
+                                                product.price
+                                            ).toLocaleString()}`
+                                            : ""
+                                    }
                                 </div>
 
                                 <div className="lounge-product-modal-description">
-                                    {product.description}
+                                    {productDescription}
                                 </div>
 
                                 <button
                                     type="button"
                                     className="lounge-product-modal-button"
                                     onClick={() => {
-                                        if (product.detailUrl) {
-                                            window.open(
-                                                product.detailUrl,
-                                                "_blank"
+                                        console.log(
+                                            "제품 상세 URL:",
+                                            productDetailUrl
+                                        );
+
+                                        if (!productDetailUrl) {
+                                            console.error(
+                                                "제품 상세 URL이 없습니다.",
+                                                product
                                             );
+
+                                            return;
                                         }
+
+                                        window.open(
+                                            productDetailUrl,
+                                            "_blank",
+                                            "noopener,noreferrer"
+                                        );
                                     }}
                                 >
                                     <span>
@@ -862,95 +1639,71 @@ function Route() {
                                 상품 정보를 불러오지 못했습니다.
                             </div>
                         )}
-
-                        <button
-                            type="button"
-                            className="lounge-product-modal-button"
-                        >
-                            <span>
-                                제품 자세히보기
-                            </span>
-
-                            <span className="lounge-product-modal-arrow">
-                                〉
-                            </span>
-                        </button>
-
-                        <button
-                            type="button"
-                            className="lounge-product-modal-button"
-                        >
-                            <span>
-                                AI 수납 확인하기
-                            </span>
-
-                            <span className="lounge-product-modal-arrow">
-                                〉
-                            </span>
-                        </button>
-
                     </div>
-
                 </div>
             )}
 
-            {/* =========================================
-                현재 페이지
-            ========================================= */}
-
+            {/* 현재 페이지 */}
             <div
-                className={`lounge-page-container lounge-page-${page}`}
+                className={
+                    `lounge-page-container lounge-page-${page}`
+                }
             >
-                {page === "takeoff" ? (
+                {
+                    page === "takeoff"
+                        ? (
+                            <Takeoff />
+                        )
+                        : page === "focus2"
+                        ? (
+                            <FocusLounge2
+                                onPrev={goFocus1}
+                                onNext={goMcm}
+                            />
+                        )
+                        : page === "mcm"
+                        ? (
+                            <MCMLounge
+                                onPrev={goFocus2}
+                            />
+                        )
+                        : (
+                            <FocusLounge1
+                                onNext={goFocus2}
+                                onStartTimer={startTimer}
+                                onTakeoff={goTakeoff}
 
-                    <Takeoff />
+                                onSelectFlight={(flight) => {
+                                    console.log(
+                                        "선택한 항공편:",
+                                        flight
+                                    );
 
-                ) : page === "focus2" ? (
+                                    setSelectedFlightInfo(
+                                        flight
+                                    );
+                                }}
 
-                    <FocusLounge2
-                        onPrev={goFocus1}
-                        onNext={goMcm}
-                    />
+                                timerActive={timerActive}
+                                ensureMusicPlaying={ensureMusicPlaying}
+                                openFlightModal={openFlightModal}
+                                flightFocusSeconds={totalFocusSeconds}
 
-                ) : page === "mcm" ? (
-
-                    <MCMLounge
-                        onPrev={goFocus2}
-                    />
-
-                ) : (
-
-                    <FocusLounge1
-                        onNext={goFocus2}
-                        onStartTimer={startTimer}
-                        onTakeoff={goTakeoff}
-                        timerActive={timerActive}
-                        ensureMusicPlaying={ensureMusicPlaying}
-
-                        openFlightModal={openFlightModal}
-
-                        flightFocusSeconds={totalFocusSeconds}
-
-                        onFlightModalOpened={() =>
-                            setOpenFlightModal(false)
-                        }
-                    />
-
-                )}
+                                onFlightModalOpened={() =>
+                                    setOpenFlightModal(false)
+                                }
+                            />
+                        )
+                }
             </div>
 
-            {/* =========================================
-                타이머 완료 SUCCESS 화면
-                Route 최상위이기 때문에 어느 페이지든 표시됨
-            ========================================= */}
-
+            {/* SUCCESS */}
             {showSuccessModal && (
                 <div className="lounge-success-overlay">
 
                     <div className="lounge-success-content">
 
-                        {/* 티켓 */}
-                        <div 
+                        <div
                             className="lounge-success-ticket-wrapper"
                             ref={successTicketRef}
                         >
@@ -960,26 +1713,21 @@ function Route() {
                                 alt="Focus Success Ticket"
                             />
 
-                            {/* 총 시간 */}
                             <div className="lounge-success-ticket-time">
                                 {formatSuccessTime(
                                     totalFocusSeconds
                                 )}
                             </div>
 
-                            {/* 장소 */}
                             <div className="lounge-success-ticket-place">
                                 {getSuccessPlace()}
                             </div>
 
-                            {/* 오늘 날짜 */}
                             <div className="lounge-success-ticket-date">
                                 {getTodayDate()}
                             </div>
-
                         </div>
 
-                        {/* 오른쪽 영역 */}
                         <div className="lounge-success-right">
 
                             <div className="lounge-success-title">
@@ -998,13 +1746,8 @@ function Route() {
                                 type="button"
                                 className="lounge-success-button lounge-success-airport-button"
                                 onClick={() => {
-                                    // SUCCESS 화면 닫기
                                     setShowSuccessModal(false);
-
-                                    // 항공편 팝업을 가지고 있는 FocusLounge1으로 이동
                                     setPage("focus1");
-
-                                    // 항공편 팝업 열기
                                     setOpenFlightModal(true);
                                 }}
                             >
@@ -1012,9 +1755,7 @@ function Route() {
                             </button>
 
                         </div>
-
                     </div>
-
                 </div>
             )}
 

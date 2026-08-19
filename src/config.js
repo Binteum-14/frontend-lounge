@@ -4,12 +4,20 @@ const BASE_URL = "https://dkcq9z3tgnp6t.cloudfront.net";
 const config = {
   API_URL: BASE_URL,
 
+  VISTIPASS: {
+    GET: `${BASE_URL}/api/visit-passes`,
+    POST: `${BASE_URL}/api/visit-passes`,
+  },
+
+  RECOMMENDATION: {
+    RECOMMENDATIONS: `${BASE_URL}/api/recommendations`,
+  },
+
   AUTH: {
     SIGNUP: `${BASE_URL}/api/auth/signup`,
     REISSUE: `${BASE_URL}/api/auth/reissue`,
     LOGOUT: `${BASE_URL}/api/auth/logout`,
     LOGIN: `${BASE_URL}/api/auth/login`,
-    GUEST_SESSION: `${BASE_URL}/api/auth/guest-session`,
     CHECK_USERNAME: `${BASE_URL}/api/auth/check-username`,
     WITHDRAW: `${BASE_URL}/api/auth/withdraw`,
   },
@@ -37,8 +45,16 @@ const config = {
     DETAIL_GET: (snackID) => `${BASE_URL}/api/focus/snacks/${snackID}`,
   },
 
+  DIAGNOSIS:{
+    DIAGNOSIS: `${BASE_URL}/api/diagnosis`,
+  },
+
   FLIGHT:{
     GET: `${BASE_URL}/api/focus/flights`,
+  },
+
+  PRESENCE:{
+    HEARTBEAT: `${BASE_URL}/api/presence/heartbeat`,
   },
 
 };
