@@ -98,15 +98,9 @@ function Home() {
     setIsSignup(false);
   };
 
+  // Focus Lounge는 로그인 체크 없이 바로 이동
   const handleGoToFocusLounge = () => {
-    if (isLoggedIn) {
-      navigate("/focus-lounge");
-      return;
-    }
-
-    alert("로그인이 필요한 서비스입니다. 로그인을 먼저 진행해주세요.");
-    setIsModalOpen(true);
-    setIsSignup(false);
+    navigate("/focus-lounge");
   };
 
   const handleGoToLounge = () => {
