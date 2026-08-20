@@ -43,7 +43,19 @@ function TicketDetailModal({ isOpen, onClose, ticketData }) {
 
           {ticketData.qrData && (
             <div className="ticket-overlay-qr">
-              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(ticketData.qrData)}`} alt="QR" />
+              <img 
+                src={ticketData.qrData} 
+                alt="Visit Pass QR Code" 
+                onClick={() => window.open(ticketData.qrData, '_blank')}
+                style={{ 
+                  width: '50px', 
+                  height: '50px', 
+                  objectFit: 'contain', 
+                  cursor: 'pointer',
+                  transform: 'translateX(-8px)'
+                }}
+                title="클릭하여 원본 링크 열기"
+              />
             </div>
           )}
         </div>
