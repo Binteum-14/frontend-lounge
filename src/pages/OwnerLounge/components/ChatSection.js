@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Plus } from 'lucide-react';
 import mocaProfileImg from '../../../assets/images/Chatbot.png';
 import passportImg from '../../../assets/images/MCMPassport.png';
+import { sendChatMessage } from '../../../api';
 
 function ChatSection({ onPassportClick }) {
   const [messages, setMessages] = useState([
@@ -9,13 +10,14 @@ function ChatSection({ onPassportClick }) {
       id: 1,
       sender: 'bot',
       botName: 'AI Moca',
-      text: `안녕하세요, 고객님! MCM 스타크 백팩의 비세토스 가죽은 세심한 관리가 필요합니다.`,
+      text: `안녕하세요, 고객님! MCM 제품 관리에 대해 무엇이든 물어보세요.`,
       options: ['가죽 손상 예방법', '비 오는 날 관리법', '가방 보관 방법'],
     },
   ]);
 
   const [inputText, setInputText] = useState('');
-  
+  const [history, setHistory] = useState([]); // 대화 내역 관리
+
   const fileInputRef = useRef(null);
   const chatContainerRef = useRef(null);
 
@@ -30,68 +32,71 @@ function ChatSection({ onPassportClick }) {
   }, [messages]);
 
   const handlePlusClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
+    fileInputRef.current?.click();
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      console.log('선택된 파일:', file);
-      const fileMessage = {
-        id: Date.now(),
-        sender: 'user',
-        text: `[첨부 파일] ${file.name}`,
-      };
-      setMessages((prev) => [...prev, fileMessage]);
+      setMessages((prev) => [...prev, { id: Date.now(), sender: 'user', text: `[첨부 파일] ${file.name}` }]);
       e.target.value = '';
     }
   };
 
-  const handleOptionClick = (optionText) => {
-    const userMessage = {
-      id: Date.now(),
-      sender: 'user',
-      text: optionText,
-    };
+  const requestChatApi = async (userText, currentHistory) => {
+    setMessages((prev) => [...prev, { id: Date.now(), sender: 'user', text: userText }]);
 
-    setMessages((prev) => [...prev, userMessage]);
+    try {
+      const payload = {
+        message: userText,
+        history: currentHistory || [],
+      };
 
-    setTimeout(() => {
-      const botReply = {
+      const response = await sendChatMessage(payload);
+      const resResult = response?.result || response?.data?.result || response; 
+      const botText = resResult?.answer || resResult?.message || "답변을 가져왔습니다.";
+      const candidates = resResult?.candidates || resResult?.suggestedQuestions || [];
+
+      let botReplyObj = {
         id: Date.now() + 1,
         sender: 'bot',
         botName: 'AI Moca',
-        text: `'${optionText}' 관련 안내 답변입니다.`,
+        text: botText,
       };
-      setMessages((prev) => [...prev, botReply]);
-    }, 800);
+
+      if (Array.isArray(candidates) && candidates.length > 0) {
+        botReplyObj.options = candidates.map((c) => (typeof c === 'string' ? c : c.name || c.question));
+      }
+
+      setMessages((prev) => [...prev, botReplyObj]);
+
+      setHistory((prev) => [
+        ...prev,
+        { role: 'USER', content: userText },
+        { role: 'ASSISTANT', content: botText },
+      ]);
+
+    } catch (error) {
+      console.error("챗봇 API 통신 에러:", error);
+      setMessages((prev) => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        botName: 'AI Moca',
+        text: "죄송합니다. 일시적인 오류가 발생했습니다. 다시 시도해 주세요.",
+      }]);
+    }
+  };
+
+  const handleOptionClick = (optionText) => {
+    requestChatApi(optionText, history);
   };
 
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!inputText.trim()) return;
-
-    const userMessage = {
-      id: Date.now(),
-      sender: 'user',
-      text: inputText,
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
+    const textToSend = inputText;
     setInputText('');
-
-    setTimeout(() => {
-      const botReply = {
-        id: Date.now() + 1,
-        sender: 'bot',
-        botName: 'AI Moca',
-        text: `'${userMessage.text}'에 대한 답변입니다.`,
-        options: ['가죽 손상 예방법', '비 오는 날 관리법', '가방 보관 방법'],
-      };
-      setMessages((prev) => [...prev, botReply]);
-    }, 1000);
+    requestChatApi(textToSend, history);
   };
 
   return (
@@ -101,28 +106,39 @@ function ChatSection({ onPassportClick }) {
           <div key={msg.id} className={`message-row ${msg.sender}`}>
             {msg.sender === 'bot' && (
               <div className="bot-profile-header">
-                <div className="bot-avatar">
-                  <img src={mocaProfileImg} alt="AI Moca" />
-                </div>
+                <div className="bot-avatar"><img src={mocaProfileImg} alt="AI Moca" /></div>
                 <span className="bot-name">{msg.botName || 'AI Moca'}</span>
               </div>
             )}
-
             <div className={`message-bubble ${msg.sender}`}>
               <p className="message-text">{msg.text}</p>
             </div>
-
-            {msg.sender === 'bot' && msg.options && (
-              <div className="options-container">
+            
+            {/* 카드 형태(세로 리스트)로 후보/옵션 렌더링 */}
+            {msg.sender === 'bot' && msg.options && msg.options.length > 0 && (
+              <div className="product-cards-container" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px', maxWidth: '85%' }}>
                 {msg.options.map((option, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    className="option-btn"
+                  <div 
+                    key={idx} 
+                    className="product-card-item"
                     onClick={() => handleOptionClick(option)}
+                    style={{
+                      background: '#ffffff',
+                      color: '#333333',
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      border: '1px solid #e0e0e0',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                      transition: 'all 0.2s ease',
+                      fontWeight: '500',
+                      fontSize: '14px',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.borderColor = '#8b0029'}
+                    onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e0e0e0'}
                   >
-                    {option}
-                  </button>
+                    📦 {option}
+                  </div>
                 ))}
               </div>
             )}
@@ -132,32 +148,11 @@ function ChatSection({ onPassportClick }) {
 
       <div className="bottom-interaction-area">
         <form className="chat-input-bar" onSubmit={handleSendMessage}>
-          
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept="image/*, .pdf"
-            style={{ display: 'none' }}
-          />
-
-          <button type="button" className="plus-btn" onClick={handlePlusClick}>
-            <Plus size={20} color="#666" />
-          </button>
-          
-          <input
-            type="text"
-            className="chat-input"
-            placeholder="궁금한 내용을 입력하세요..."
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-          />
-
-          <button type="submit" className="send-btn">
-            <Send size={18} color="#fff" />
-          </button>
+          <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*, .pdf" style={{ display: 'none' }} />
+          <button type="button" className="plus-btn" onClick={handlePlusClick}><Plus size={20} color="#666" /></button>
+          <input type="text" className="chat-input" placeholder="궁금한 내용을 입력하세요..." value={inputText} onChange={(e) => setInputText(e.target.value)} />
+          <button type="submit" className="send-btn"><Send size={18} color="#fff" /></button>
         </form>
-
         <div className="passport-wrapper" onClick={onPassportClick}>
           <img src={passportImg} alt="MCM Passport" className="passport-img" />
         </div>

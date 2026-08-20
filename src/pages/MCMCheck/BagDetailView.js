@@ -13,7 +13,6 @@ const BagDetailView = () => {
 
   const passedProducts = location.state?.products;
 
-
   const products = passedProducts && passedProducts.length > 0 ? passedProducts.map((p, index) => {
     const customSpecs = [
       { storage: "★★★★★", utility: "★★★★★", travel: "★★★★★", commute: "★★★★☆", laptop: "◯", airline: "◯" }, // 1순위 스펙
@@ -153,7 +152,12 @@ const BagDetailView = () => {
             다른 제품 보러가기
           </button>
           
-          <button type="button" className="btn-visit-pass" onClick={() => navigate('/visit-pass')}>
+          {/* ✅ 수정된 부분: 현재 보고 있는 상품의 ID를 recommendationProductId로 전달 */}
+          <button 
+            type="button" 
+            className="btn-visit-pass" 
+            onClick={() => navigate('/visit-pass', { state: { recommendationProductId: currentProduct.id } })}
+          >
             VISIT PASS 발급하기
           </button>
         </div>

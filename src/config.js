@@ -4,7 +4,7 @@ const BASE_URL = "https://dkcq9z3tgnp6t.cloudfront.net";
 const config = {
   API_URL: BASE_URL,
 
-  VISTIPASS: {
+  VISITPASS: {
     GET: `${BASE_URL}/api/visit-passes`,
     POST: `${BASE_URL}/api/visit-passes`,
   },
@@ -46,7 +46,7 @@ const config = {
   },
 
   DIAGNOSIS:{
-    DIAGNOSIS: `${BASE_URL}/api/diagnosis`,
+    POST: `${BASE_URL}/api/diagnosis`,
   },
 
   FLIGHT:{
@@ -55,6 +55,10 @@ const config = {
 
   PRESENCE: {
     HEARTBEAT: `${BASE_URL}/api/presence/heartbeat`,
+  },
+
+  CHAT: {
+    SEND: `${BASE_URL}/api/owner-lounge/chat`,
   },
 
 };

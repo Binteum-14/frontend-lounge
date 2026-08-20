@@ -173,3 +173,203 @@ html, body {
     width: 180px; 
   }
 }
+
+/* 우측 상단 로그인 버튼 컨테이너 고정 */
+.top-right-nav {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  z-index: 20;
+}
+
+/* 우측 상단 로그인 버튼 디자인 */
+.top-login-btn {
+  padding: 8px 18px;
+  background-color: rgba(0, 0, 0, 0.5); /* 반투명 배경 */
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px; /* 둥근 캡슐 형태 */
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  backdrop-filter: blur(4px); /* 뒤 배경이 살짝 흐려지는 유리알 효과 */
+}
+
+/* 마우스 올렸을 때 효과 */
+.top-login-btn:hover {
+  background-color: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+}
+
+/* --- 기존 우측 상단 로그인 버튼 스타일 --- */
+.top-right-nav {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  z-index: 20;
+}
+
+.top-login-btn {
+  padding: 8px 18px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  backdrop-filter: blur(4px);
+}
+
+.top-login-btn:hover {
+  background-color: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+}
+
+/* --- 모달 백드롭 (배경 어둡게) --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+/* --- 모달 박스 --- */
+.auth-modal {
+  position: relative;
+  width: 380px;
+  background: #ffffff;
+  padding: 36px 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  animation: modalFadeIn 0.25s ease-in-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 닫기 버튼 */
+.modal-close-btn {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.modal-close-btn:hover {
+  color: #000;
+}
+
+/* 모달 제목 */
+.modal-title {
+  font-size: 22px;
+  font-weight: bold;
+  color: #222;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+/* 입력 필드 그룹 */
+.input-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 6px;
+}
+
+.input-group input {
+  padding: 12px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+  border-color: #000;
+}
+
+/* 제출 버튼 (로그인 / 회원가입) */
+.auth-submit-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+
+.auth-submit-btn:hover {
+  background-color: #333333;
+}
+
+/* 하단 전환 텍스트 (로그인 <-> 회원가입) */
+.auth-switch-text {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: #666;
+}
+
+.auth-switch-text span {
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-left: 4px;
+}
+
+/* 모달 로고 컨테이너 */
+.modal-logo-container {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+/* MCM 로고 이미지 크기 조절 */
+.modal-logo-img {
+  width: 70px; /* 원하는 크기로 조절 가능합니다 (예: 60px~90px) */
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 8px;
+}
+
+/* 로고 아래 안내 텍스트 */
+.modal-subtitle {
+  font-size: 13px;
+  color: #666666;
+}

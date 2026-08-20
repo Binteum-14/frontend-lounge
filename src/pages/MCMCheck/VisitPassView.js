@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getUsername } from '../../api';
 import './VisitPassView.css';
 
 import ticketImg from '../../assets/images/VisitPass.png'; 
@@ -7,6 +8,29 @@ import bgImage from '../../assets/images/MCMCheckBackground.png';
 
 const VisitPassView = () => {
   const navigate = useNavigate();
+  
+  const [username, setUsername] = useState('USER');
+  const [loading, setLoading] = useState(true);
+
+  // PassportModal과 동일하게 유저네임만 불러와서 QR 생성하기
+  useEffect(() => {
+    const fetchUser = async () => {
+      setLoading(true);
+      try {
+        const userResponse = await getUsername();
+        const fetchedName = userResponse?.result?.username || userResponse?.username;
+        if (fetchedName) {
+          setUsername(fetchedName);
+        }
+      } catch (error) {
+        console.error("유저 정보를 불러오지 못했습니다.", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   return (
     <div
@@ -23,12 +47,6 @@ const VisitPassView = () => {
         role="link"
         tabIndex={0}
         onClick={() => navigate('/')} 
-        onKeyDown={(e) => { 
-          if (e.key === 'Enter' || e.key === ' ') { 
-            e.preventDefault(); 
-            navigate('/'); 
-          } 
-        }}
         style={{ cursor: 'pointer' }}
       >
         MCM LOUNGE
@@ -39,6 +57,18 @@ const VisitPassView = () => {
         
         <div className="ticket-img-wrapper">
           <img src={ticketImg} alt="MCM VISIT PASS" />
+
+          <div className="qr-code-overlay">
+            {loading ? (
+              <span style={{ fontSize: '11px', color: '#666' }}>생성 중...</span>
+            ) : (
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=MCM-VISIT-PASS-${username.toUpperCase()}`}
+                alt="Visit Pass QR Code"
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              />
+            )}
+          </div>
         </div>
 
         <p className="pass-guide-text">
