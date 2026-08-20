@@ -311,6 +311,35 @@ export const post = async (
   return response.data;
 };
 
+/* =========================================
+   POST - Blob / SVG 응답
+========================================= */
+
+export const postBlob = async (
+  endpoint,
+  data = {},
+  options = {}
+) => {
+
+  const response =
+    await api.post(
+      endpoint,
+      data,
+      {
+        ...options,
+
+        responseType: "blob",
+      }
+    );
+
+  /*
+   * SVG / 이미지 응답이므로
+   * validateContentType() 호출하지 않음
+   */
+
+  return response.data;
+};
+
 
 /* =========================================
    PUT

@@ -61,5 +61,12 @@ const config = {
     SEND: `${BASE_URL}/api/owner-lounge/chat`,
   },
 
+  AIPACKING:{
+    XRAY: (loungeId) => `${BASE_URL}/api/packing/lounge/${loungeId}/xray-preview`,
+    CHECK: (loungeId) => `${BASE_URL}/api/packing/lounge/${loungeId}/check`,
+    PROFILE: `${BASE_URL}/api/packing/profiles`,
+    ITEMS: `${BASE_URL}/api/packing/items`,
+  },
+
 };
 export default config;

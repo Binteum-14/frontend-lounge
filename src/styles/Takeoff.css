@@ -79,13 +79,12 @@ body,
 .lounge-wallet-image:not(.lounge-wallet-image-api) {
     width: 250px;
     height: auto;
-    transform: translate(0, 30px);
+    transform: translate(200px, 20px);
 }
 
-/* Takeoff API 가방 */
 .lounge-wallet-wrapper-takeoff
 .lounge-wallet-image.lounge-wallet-image-api {
     width: 500px;
     height: auto;
-    transform: translate(70px, 50px);
+    transform: translate(350px, 70px);
 }
