@@ -622,4 +622,23 @@ export const createFocusPass = async (focusData) => {
   }
 };
 
+// 로그인 API 함수
+export const loginUser = async (username, password) => {
+  try {
+    const response = await post('/api/auth/login', { username, password });
+
+    if (response.isSuccess && response.result) {
+      // tokenType을 제외하고 accessToken만 구조 분해 할당
+      const { accessToken } = response.result;
+      
+      cookies.set(ACCESS_TOKEN_KEY, accessToken, { path: "/" });
+    }
+
+    return response;
+  } catch (error) {
+    console.error("로그인 실패:", error);
+    throw error;
+  }
+};
+
 export default api;
