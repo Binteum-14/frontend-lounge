@@ -490,59 +490,136 @@ export const uploadImageWithJson =
     return response.data;
   };
 
+// 로그아웃 API 함수
+export const logoutUser = async () => {
+  try {
+    const response = await post(config.AUTH.LOGOUT);
+    cookies.remove(ACCESS_TOKEN_KEY, { path: "/" });
+    return response;
+  } catch (error) {
+    console.error("로그아웃 실패:", error);
+    throw error;
+  }
+};
+
+// 회원 탈퇴 API 함수
+export const withdrawUser = async () => {
+  try {
+    const response = await del(config.AUTH.WITHDRAW);
+    cookies.remove(ACCESS_TOKEN_KEY, { path: "/" });
+    return response;
+  } catch (error) {
+    console.error("회원 탈퇴 실패:", error);
+    throw error;
+  }
+};
+
+export const postDiagnosis = async (answersData, options = {}) => {
+  try {
+    const response = await post(config.DIAGNOSIS.POST, answersData, options);
+    return response;
+  } catch (error) {
+    console.error("진단 API 요청 실패:", error);
+    throw error;
+  }
+};
+
+// 👇 우리가 추가했던 유저네임 조회 함수
+export const getUsername = async () => {
+  try {
+    const response = await get('/api/user/me'); 
+    return response;
+  } catch (error) {
+    console.error("유저네임 조회 실패:", error);
+    throw error;
+  }
+};
 
 /* =========================================
-   PUT - 이미지 + JSON
+   PUT - 이미지 + JSON (팀원분이 추가하신 코드)
 ========================================= */
+export const uploadImageWithJson2 = async (
+  endpoint,
+  imageFile,
+  jsonData,
+  options = {}
+) => {
+  try {
+    const formData = new FormData();
+    formData.append("coverImage", imageFile);
+    formData.append("readingLog", JSON.stringify(jsonData));
 
-export const uploadImageWithJson2 =
-  async (
-    endpoint,
-    imageFile,
-    jsonData,
-    options = {}
-  ) => {
-
-    const formData =
-      new FormData();
-
-
-    formData.append(
-      "coverImage",
-      imageFile
+    const response = await api.put(
+      endpoint,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        ...options,
+      }
     );
 
-
-    formData.append(
-      "readingLog",
-      JSON.stringify(
-        jsonData
-      )
-    );
-
-
-    const response =
-      await api.put(
-        endpoint,
-        formData,
-        {
-          headers: {
-            "Content-Type":
-              "multipart/form-data",
-          },
-
-          ...options,
-        }
-      );
-
-
-    validateContentType(
-      response
-    );
-
-
+    validateContentType(response);
     return response.data;
-  };
+  } catch (error) {
+    throw error;
+  }
+};
 
+export const sendChatMessage = async (chatData, options = {}) => {
+  try {
+    const response = await api.post(config.CHAT.SEND, chatData, options);
+    
+    return response.data;
+  } catch (error) {
+    console.error("챗봇 메시지 전송 실패:", error);
+    throw error;
+  }
+};
+
+// 1. Visit Pass 발급 (POST)
+export const createVisitPass = async (recommendationProductId) => {
+  try {
+    const response = await post(config.VISITPASS.POST, { recommendationProductId });
+    return response;
+  } catch (error) {
+    console.error("Visit Pass 발급 실패:", error);
+    throw error;
+  }
+};
+
+// 2. Visit Pass 목록 및 QR 조회 (GET)
+export const getVisitPasses = async () => {
+  try {
+    const response = await get(config.VISITPASS.GET);
+    return response;
+  } catch (error) {
+    console.error("Visit Pass 조회 실패:", error);
+    throw error;
+  }
+};
+
+// 포커스 패스 목록 조회 (무한 스크롤용 cursor 지원)
+export const getFocusPasses = async (cursorId = 0, size = 10) => {
+  try {
+    const response = await get('/api/focus/pass', { cursorId, size });
+    return response;
+  } catch (error) {
+    console.error("포커스 패스 목록 조회 실패:", error);
+    throw error;
+  }
+};
+
+// 포커스 패스 저장 (POST)
+export const createFocusPass = async (focusData) => {
+  try {
+    const response = await post('/api/focus/pass', focusData);
+    return response;
+  } catch (error) {
+    console.error("포커스 패스 저장 실패:", error);
+    throw error;
+  }
+};
 
 export default api;

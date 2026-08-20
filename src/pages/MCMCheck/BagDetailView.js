@@ -1,44 +1,48 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './BagDetailView.css';
 
-import bagImg1 from '../../assets/images/MCMBag.png';
+import bagImg1 from '../../assets/images/mcmbag.png';
 import bagImg2 from '../../assets/images/MCMBag2.png';
 import bagImg3 from '../../assets/images/MCMBag3.png';
 import bgImage from '../../assets/images/MCMCheckBackground.png';
 
 const BagDetailView = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const products = [
+  const passedProducts = location.state?.products;
+
+  const products = passedProducts && passedProducts.length > 0 ? passedProducts.map((p, index) => {
+    const customSpecs = [
+      { storage: "★★★★★", utility: "★★★★★", travel: "★★★★★", commute: "★★★★☆", laptop: "◯", airline: "◯" }, // 1순위 스펙
+      { storage: "★★★★☆", utility: "★★★★★", travel: "★★★★☆", commute: "★★★★★", laptop: "◯", airline: "✕" }, // 2순위 스펙
+      { storage: "★★★★★", utility: "★★★★☆", travel: "★★★☆☆", commute: "★★★★★", laptop: "◯", airline: "◯" }  // 3순위 스펙
+    ];
+
+    return {
+      id: p.productId,
+      title: p.name,
+      image: p.imageUrl,
+      homepageUrl: p.detailUrl || "https://kr.mcmworldwide.com",
+      specs: customSpecs[index] || customSpecs[0], // 순위에 맞는 스펙 적용
+      analysisText: p.recommendationReason
+    };
+  }) : [
     {
       id: 1,
       title: "STARK SIDE STUDS\nBACKPACK IN VISETOS",
       image: bagImg1,
       homepageUrl: "https://kr.mcmworldwide.com/ko_KR/%EA%B0%80%EB%B0%A9/%EB%B0%B1%ED%8C%A9/stark-%EC%82%AC%EC%9D%B4%EB%93%9C-%EC%8A%A4%ED%84%B0%EB%93%9C-%EB%B9%84%EC%84%B8%ED%86%A0%EC%8A%A4-%EB%B0%B1%ED%8C%A9/MMKEAVE12CO001.html?cgid=bags-backpacks",
-      specs: {
-        storage: "★★★★★",
-        utility: "★★★★★",
-        travel: "★★★★★",
-        commute: "★★★★☆",
-        laptop: "◯",
-        airline: "◯"
-      },
+      specs: { storage: "★★★★★", utility: "★★★★★", travel: "★★★★★", commute: "★★★★☆", laptop: "◯", airline: "◯" },
       analysisText: "높은 수납력과 뛰어난 활용도를 갖춘 백팩으로, 학교·업무·여행 등 다양한 상황에 적합합니다. 노트북 수납이 가능해 출퇴근용으로 활용하기 좋으며, 기내용 사이즈로 여행 시에도 편리하게 사용할 수 있습니다. 다만 방수 기능은 제한적이므로 우천 시 주의가 필요합니다."
     },
     {
       id: 2,
       title: "Aren Visetos Drawstring Backpack", 
       image: bagImg2,
-      homepageUrl: "https://kr.mcmworldwide.com/ko_KR/%EA%B0%80%EB%B0%A9/%EB%B0%B1%ED%8C%A9/aren-%EB%B9%84%EC%84%B8%ED%86%A0%EC%8A%A4-%EB%93%9C%EB%A1%9C%EC%9A%B0%EC%8A%A4%ED%8A%B8%EB%A7%81-%EB%B0%B1%ED%8C%A9/MWKGATA03PZ001.html?cgid=bags-backpacks",
-      specs: {
-        storage: "★★★★☆",
-        utility: "★★★★★",
-        travel: "★★★★☆",
-        commute: "★★★★★",
-        laptop: "◯",
-        airline: "✕"
-      },
+      homepageUrl: "https://kr.mcmworldwide.com/ko_KR/%EA%B0%80%EB%B0%A9/%EB%B0%B1%ED%8C%A9/aren-%EB%B9%84%EC%84%B8%ED%86%A0%EC%8A%A4-%EB%93%9C%EB%90%98%EC%9A%B0%EC%8A%A4%ED%8A%B8%EB%A7%81-%EB%B0%B1%ED%8C%A9/MWKGATA03PZ001.html?cgid=bags-backpacks",
+      specs: { storage: "★★★★☆", utility: "★★★★★", travel: "★★★★☆", commute: "★★★★★", laptop: "◯", airline: "✕" },
       analysisText: "세련된 다이아몬드 패턴과 뛰어난 착용감을 자랑하는 제품입니다. 가벼운 무게감으로 도심 속 일상이나 비즈니스 캐주얼 스타일에 최적화되어 있습니다."
     },
     {
@@ -46,24 +50,13 @@ const BagDetailView = () => {
       title: "Stark Monogram Nylon Packable Backpack",
       image: bagImg3,
       homepageUrl: "https://kr.mcmworldwide.com/ko_KR/%EA%B0%80%EB%B0%A9/%EB%B0%B1%ED%8C%A9/%EC%8A%A4%ED%83%80%ED%81%AC-%EB%AA%A8%EB%85%B8%EA%B7%B8%EB%9E%A8-%EB%82%98%EC%9D%BC%EB%A1%A0-%ED%8C%A8%EC%BB%A4%EB%B8%94-%EB%B0%B1%ED%8C%A9/MMKEAVE05CO001.html?cgid=bags-backpacks",
-      specs: {
-        storage: "★★★★★",
-        utility: "★★★★☆",
-        travel: "★★★☆☆",
-        commute: "★★★★★",
-        laptop: "◯",
-        airline: "◯"
-      },
+      specs: { storage: "★★★★★", utility: "★★★★☆", travel: "★★★☆☆", commute: "★★★★★", laptop: "◯", airline: "◯" },
       analysisText: "넉넉한 내부 수납공간과 클래식한 디자인이 조화를 이루는 토트백입니다. 깔끔한 실루엣으로 오피스룩과 포멀한 스타일에 두루 어울립니다."
     }
   ];
 
-
   const [currentIndex, setCurrentIndex] = useState(0);
-
-
   const currentProduct = products[currentIndex];
-
 
   const handleNextProduct = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % products.length);
@@ -159,7 +152,12 @@ const BagDetailView = () => {
             다른 제품 보러가기
           </button>
           
-          <button type="button" className="btn-visit-pass" onClick={() => navigate('/visit-pass')}>
+          {/* ✅ 수정된 부분: 현재 보고 있는 상품의 ID를 recommendationProductId로 전달 */}
+          <button 
+            type="button" 
+            className="btn-visit-pass" 
+            onClick={() => navigate('/visit-pass', { state: { recommendationProductId: currentProduct.id } })}
+          >
             VISIT PASS 발급하기
           </button>
         </div>
