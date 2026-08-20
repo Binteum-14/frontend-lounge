@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import html2canvas from "html2canvas";
 
-import { get, post } from "./api";
+import { get, post, postBlob } from "./api";
 import config from "./config";
 
 import FocusLounge1 from "./pages/FocusLounge/FocusLounge1";
@@ -70,6 +70,11 @@ function Route() {
     const [productLoading, setProductLoading] =
         useState(false);
 
+    // AI Packing
+    const [showPackingModal, setShowPackingModal] = useState(false);
+    const [packingLoading, setPackingLoading] = useState(false);
+    const [packingImage, setPackingImage] = useState(null);
+
     // 성공 화면
     const [showSuccessModal, setShowSuccessModal] =
         useState(false);
@@ -113,7 +118,13 @@ function Route() {
                     "accessToken"
                 );
 
+            const isGuest =
+                localStorage.getItem(
+                    "isGuest"
+                ) === "true";
+
             const hasAccessToken =
+                !isGuest &&
                 !!accessToken;
 
             const heartbeatKey =
@@ -129,14 +140,10 @@ function Route() {
                     {
                         themeType:
                             presenceTheme,
+                        isGuest,
                         hasAccessToken,
                     }
                 );
-
-
-                /*
-                * StrictMode 중복 요청 방지
-                */
                 if (
                     !heartbeatRequestPromise ||
                     lastHeartbeatKey !==
@@ -659,7 +666,15 @@ function Route() {
                 "accessToken"
             );
 
-        if (!accessToken) {
+        const isGuest =
+            localStorage.getItem(
+                "isGuest"
+            ) === "true";
+
+        if (
+            isGuest ||
+            !accessToken
+        ) {
             console.log(
                 "게스트 사용자이므로 포커스 기록을 저장하지 않습니다."
             );
@@ -1027,6 +1042,183 @@ function Route() {
             setProductLoading(
                 false
             );
+        }
+    };
+
+    /* =========================================
+    AI Packing XRAY
+    ========================================= */
+
+    const fetchPackingXray = async () => {
+        const accessToken =
+            localStorage.getItem("accessToken");
+
+        if (!accessToken) {
+            alert(
+                "AI 수납 확인은 로그인 후 이용할 수 있습니다."
+            );
+            return;
+        }
+
+        try {
+            setPackingLoading(true);
+            setPackingImage(null);
+
+            // 1. 먼저 Packing Profile 조회
+            const profileResponse =
+                await get(
+                    config.AIPACKING.PROFILE
+                );
+
+            console.log(
+                "AI Packing PROFILE 응답:",
+                profileResponse
+            );
+
+            // loungeId 후보
+            const profiles =
+                Array.isArray(profileResponse)
+                    ? profileResponse
+                    : profileResponse?.result;
+
+            if (!Array.isArray(profiles)) {
+                console.error(
+                    "PROFILE 응답이 배열이 아닙니다.",
+                    profileResponse
+                );
+
+                return;
+            }
+
+            /*
+            * 상품 상세 URL에서 SKU 추출
+            *
+            * 예:
+            * .../MWPAATN04BK001.html
+            * → MWPAATN04BK001
+            */
+            const detailUrl =
+                product?.detailUrl || "";
+
+            const skuMatch =
+                detailUrl.match(
+                    /([A-Z0-9]+)\.html/i
+                );
+
+            const currentSku =
+                skuMatch?.[1];
+
+            console.log(
+                "현재 상품 SKU:",
+                currentSku
+            );
+
+            if (!currentSku) {
+                console.error(
+                    "현재 상품에서 SKU를 찾을 수 없습니다.",
+                    product
+                );
+
+                return;
+            }
+
+            /*
+            * PROFILE 목록에서 같은 SKU의 가방 검색
+            */
+            const matchedProfile =
+                profiles.find(
+                    (profile) =>
+                        profile.sku === currentSku
+                );
+
+            console.log(
+                "매칭된 Packing Profile:",
+                matchedProfile
+            );
+
+            if (!matchedProfile) {
+                console.error(
+                    "현재 상품과 일치하는 Packing Profile이 없습니다.",
+                    {
+                        currentSku,
+                        profiles,
+                    }
+                );
+
+                return;
+            }
+
+            const loungeId =
+                matchedProfile.loungeId;
+
+            console.log(
+                "AI Packing loungeId:",
+                loungeId
+            );
+
+            console.log(
+                "AI Packing loungeId:",
+                loungeId
+            );
+
+            const itemsResponse =
+                await get(
+                    config.AIPACKING.ITEMS
+                );
+
+            console.log(
+                "AI Packing ITEMS 응답:",
+                itemsResponse
+            );
+
+            /*
+            * 테스트용으로 앞에서 3개 선택
+            */
+            const itemCodes =
+                itemsResponse
+                    .slice(0, 3)
+                    .map(
+                        (item) => item.code
+                    );
+
+            console.log(
+                "XRAY에 보낼 itemCodes:",
+                itemCodes
+            );
+
+            const xrayBlob =
+                await postBlob(
+                    config.AIPACKING.XRAY(
+                        loungeId
+                    ),
+                    {
+                        itemCodes,
+                    }
+                );
+
+            console.log(
+                "AI Packing XRAY Blob:",
+                xrayBlob
+            );
+
+            const imageUrl =
+                URL.createObjectURL(
+                    xrayBlob
+                );
+
+            setPackingImage(
+                imageUrl
+            );
+
+        } catch (error) {
+            console.error(
+                "AI Packing 조회 실패:",
+                error.response?.data ||
+                error
+            );
+
+        } finally {
+            setPackingLoading(false);
         }
     };
 
@@ -1703,12 +1895,36 @@ function Route() {
                                         〉
                                     </span>
                                 </button>
-
-
-                                {/* AI 수납 확인 */}
-                                <button
+                               <button
                                     type="button"
                                     className="lounge-product-modal-button"
+                                    onClick={() => {
+                                        const isGuest =
+                                            localStorage.getItem(
+                                                "isGuest"
+                                            ) === "true";
+
+                                        const accessToken =
+                                            localStorage.getItem(
+                                                "accessToken"
+                                            );
+
+                                        if (
+                                            isGuest ||
+                                            !accessToken
+                                        ) {
+                                            alert(
+                                                "AI 수납 확인은 로그인 후 이용할 수 있습니다."
+                                            );
+
+                                            return;
+                                        }
+
+                                        setShowProductModal(false);
+                                        setShowPackingModal(true);
+
+                                        fetchPackingXray();
+                                    }}
                                 >
                                     <span>
                                         AI 수납 확인하기
@@ -1724,6 +1940,60 @@ function Route() {
 
                             <div className="lounge-product-loading">
                                 상품 정보를 불러오지 못했습니다.
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+            {/* =========================================
+                AI Packing 결과
+            ========================================= */}
+
+            {showPackingModal && (
+                <div
+                    className="lounge-packing-modal-overlay"
+                    onClick={() =>
+                        setShowPackingModal(false)
+                    }
+                >
+                    <div
+                        className="lounge-packing-modal"
+                        onClick={(event) =>
+                            event.stopPropagation()
+                        }
+                    >
+                        <button
+                            type="button"
+                            className="lounge-packing-modal-close"
+                            onClick={() =>
+                                setShowPackingModal(false)
+                            }
+                            aria-label="AI 수납 팝업 닫기"
+                        >
+                            ×
+                        </button>
+
+                        <div className="lounge-packing-title">
+                            AI PACKING
+                        </div>
+
+                        {packingLoading ? (
+                            <div className="lounge-packing-loading">
+                                AI가 수납 상태를 확인하고 있습니다...
+                            </div>
+
+                        ) : packingImage ? (
+
+                            <img
+                                className="lounge-packing-image"
+                                src={packingImage}
+                                alt="AI 수납 확인 결과"
+                            />
+
+                        ) : (
+
+                            <div className="lounge-packing-loading">
+                                AI 수납 이미지를 불러오지 못했습니다.
                             </div>
                         )}
                     </div>
