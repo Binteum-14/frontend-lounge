@@ -12,6 +12,9 @@ function PassportModal({ isOpen, onClose }) {
   const [username, setUsername] = useState('사용자');
   const [issuedDate, setIssuedDate] = useState('2026.08.03'); 
   const [studyCards, setStudyCards] = useState([]);
+  
+  // 🌟 고정된 S3 QR 이미지 URL을 상수로 선언
+  const qrImageUrl = "https://mcm-focus-lounge-visitpass-qr.s3.ap-northeast-2.amazonaws.com/visit-pass/qr/82ca68e6-0f41-4cbe-abd6-c3f33e81af49.png";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -95,7 +98,7 @@ function PassportModal({ isOpen, onClose }) {
     setSelectedTicketData({
       bgUrl: visitPassBg,
       downloadName: 'MCM_Visit_Pass.png',
-      qrData: `MCM-VISIT-PASS-${username.toUpperCase()}`, 
+      qrData: qrImageUrl, // 🌟 이 부분도 S3 링크로 반영되도록 통일!
       fields: [
         { label: 'Passenger', value: username, className: 'passenger-field' },
         { label: 'Issued', value: issuedDate, className: 'issued-field' },
@@ -164,8 +167,8 @@ function PassportModal({ isOpen, onClose }) {
 
             <div className="ticket-overlay-qr">
               <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=MCM-VISIT-PASS-${username.toUpperCase()}`}
-                alt="QR Code"
+                src={qrImageUrl}
+                alt="Visit Pass QR Code"
               />
             </div>
           </div>
