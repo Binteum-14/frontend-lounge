@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logoImg from "../../assets/images/MCMCheckLogo.png";
+import { loginUser } from "../../api";
+import { Cookies } from "react-cookie";
 
 import "./Home.css";
 
@@ -8,7 +10,7 @@ import {
   CheckSquare,
   Coffee,
   Ticket,
-  X, // 모달 닫기 엑스 아이콘
+  X,
 } from "lucide-react";
 
 import bgImage from "../../assets/images/MCMAirport.png";
@@ -16,11 +18,17 @@ import luggageImg from "../../assets/images/luggage.png";
 
 function Home() {
   const navigate = useNavigate();
+  const cookies = new Cookies();
 
   // 모달창 열림/닫힘 상태
   const [isModalOpen, setIsModalOpen] = useState(false);
   // true면 회원가입 뷰, false면 로그인 뷰
   const [isSignup, setIsSignup] = useState(false);
+
+  // 로그인 상태 관리 (새로고침해도 유지되도록 localStorage 연동)
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    localStorage.getItem("isLoggedIn") === "true"
+  );
 
   // 입력폼 상태 관리
   const [formData, setFormData] = useState({
@@ -35,11 +43,34 @@ function Home() {
   };
 
   // 로그인 제출 핸들러
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    // TODO: 백엔드 로그인 API 연동 부분
-    console.log("로그인 시도:", formData.username, formData.password);
-    alert("로그인 시도중...");
+    try {
+      const response = await loginUser(formData.username, formData.password);
+
+      if (response.isSuccess) {
+        alert("로그인에 성공했습니다!");
+        
+        localStorage.setItem("isLoggedIn", "true");
+        setIsLoggedIn(true);
+        
+        setIsModalOpen(false);
+        setFormData({ username: "", password: "", confirmPassword: "" });
+      } else {
+        alert(`로그인 실패: ${response.message || "아이디 또는 비밀번호를 확인해주세요."}`);
+      }
+    } catch (error) {
+      console.error("로그인 에러:", error);
+      alert("서버와 통신 중 문제가 발생했습니다.");
+    }
+  };
+
+  // 로그아웃 핸들러
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn");
+    cookies.remove("accessToken", { path: "/" });
+    setIsLoggedIn(false);
+    alert("로그아웃 되었습니다.");
   };
 
   // 회원가입 제출 핸들러
@@ -49,31 +80,38 @@ function Home() {
       alert("비밀번호가 일치하지 않습니다.");
       return;
     }
-    // TODO: 백엔드 회원가입 API 연동 부분
     console.log("회원가입 시도:", formData.username, formData.password);
     alert("회원가입 시도중...");
   };
 
   /* =========================================
-     Owner Lounge 이동
+     메뉴 버튼 이동 핸들러들
   ========================================= */
-  const handleGoToLounge = () => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
-
-    if (isLoggedIn === "true") {
-      navigate("/owner-lounge");
+  const handleGoToCheck = () => {
+    if (isLoggedIn) {
+      navigate("/mcm-check");
       return;
     }
 
-    alert(
-      "로그인이 필요한 서비스입니다. 로그인을 먼저 진행해주세요."
-    );
+    alert("로그인이 필요한 서비스입니다. 로그인을 먼저 진행해주세요.");
     setIsModalOpen(true);
     setIsSignup(false);
   };
 
+  // Focus Lounge는 로그인 체크 없이 바로 이동
   const handleGoToFocusLounge = () => {
     navigate("/focus-lounge");
+  };
+
+  const handleGoToLounge = () => {
+    if (isLoggedIn) {
+      navigate("/owner-lounge");
+      return;
+    }
+
+    alert("로그인이 필요한 서비스입니다. 로그인을 먼저 진행해주세요.");
+    setIsModalOpen(true);
+    setIsSignup(false);
   };
 
   return (
@@ -83,18 +121,28 @@ function Home() {
         backgroundImage: `url(${bgImage})`,
       }}
     >
-      {/* 우측 상단 로그인 버튼 */}
+      {/* 우측 상단 로그인/로그아웃 버튼 */}
       <div className="top-right-nav">
-        <button
-          className="top-login-btn"
-          type="button"
-          onClick={() => {
-            setIsSignup(false);
-            setIsModalOpen(true);
-          }}
-        >
-          로그인
-        </button>
+        {isLoggedIn ? (
+          <button
+            className="top-login-btn"
+            type="button"
+            onClick={handleLogout}
+          >
+            로그아웃
+          </button>
+        ) : (
+          <button
+            className="top-login-btn"
+            type="button"
+            onClick={() => {
+              setIsSignup(false);
+              setIsModalOpen(true);
+            }}
+          >
+            로그인
+          </button>
+        )}
       </div>
 
       <header className="home-header">
@@ -106,10 +154,7 @@ function Home() {
           <button
             className="menu-btn"
             type="button"
-            onClick={() => {
-              setIsSignup(false);
-              setIsModalOpen(true);
-            }}
+            onClick={handleGoToCheck}
           >
             <CheckSquare className="btn-icon" size={20} />
             <span>MCM Check</span>
@@ -143,7 +188,7 @@ function Home() {
         </div>
       </div>
 
-      {/* 🌟 로그인 / 회원가입 모달 창 */}
+      {/* 로그인 / 회원가입 모달 창 */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
@@ -154,7 +199,6 @@ function Home() {
               <X size={20} />
             </button>
 
-            {/* 모달 상단 로고 이미지 (안내 문구 삭제) */}
             <div className="modal-logo-container">
               <img
                 src={logoImg}
@@ -163,7 +207,6 @@ function Home() {
               />
             </div>
 
-            {/* 로그인 / 회원가입 폼 */}
             <form
               onSubmit={isSignup ? handleSignupSubmit : handleLoginSubmit}
             >
@@ -210,7 +253,6 @@ function Home() {
               </button>
             </form>
 
-            {/* 하단 전환 버튼 */}
             <div className="auth-switch-text">
               {isSignup ? (
                 <p>

@@ -2,16 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
 import './MCMCheck.css';
-import { get, post } from '../../api';
-import config from '../../config';
-
-import mocaImg from '../../assets/images/AIMocaCheck.png';
 import bgImage from '../../assets/images/MCMCheckBackground.png';
 import loadingMocaImg from '../../assets/images/LoadingMoca.png'; 
-import logoImg from '../../assets/images/MCMCheckLogo.png'; 
+import mocaImg from '../../assets/images/AIMocaCheck.png';
 
 import ResultView from './ResultView'; 
- 
 
 const surveyQuestions = [
   {
@@ -92,17 +87,7 @@ const McmCheck = () => {
   const [currentIndex, setCurrentIndex] = useState(0); 
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
   const [showResult, setShowResult] = useState(false); 
-  
-  const [authMode, setAuthMode] = useState('main');
-
-  const [loginId, setLoginId] = useState('');
-  const [loginPw, setLoginPw] = useState('');
-  
-  const [signupId, setSignupId] = useState('');
-  const [signupPw, setSignupPw] = useState('');
-  const [signupPwConfirm, setSignupPwConfirm] = useState('');
 
   const currentQ = surveyQuestions[currentIndex];
   const progressPercent = Math.round(((currentIndex + 1) / surveyQuestions.length) * 100);
@@ -126,159 +111,8 @@ const McmCheck = () => {
       setIsAnalyzing(true);
       setTimeout(() => {
         setIsAnalyzing(false);
-        setIsCompleted(true); 
+        setShowResult(true); // 분석 완료 후 바로 결과 화면으로 이동
       }, 2500);
-    }
-  };
-
-  const handleLoginSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      const response = await post(
-        config.AUTH.LOGIN,
-        {
-          username: loginId,
-          password: loginPw,
-        }
-      );
-
-      console.log("로그인 전체 응답:", response);
-      console.log("로그인 result:", response.result);
-      console.log(
-        "accessToken:",
-        response.result?.accessToken
-      );
-
-      if (response.isSuccess) {
-        console.log("로그인 성공");
-
-        localStorage.setItem(
-          "isLoggedIn",
-          "true"
-        );
-
-        // 3. 토큰을 localStorage 대신 쿠키에 저장 (api.js 인터셉터가 읽을 수 있도록 설정)
-        if (response.result?.accessToken) {
-          localStorage.setItem(
-            "accessToken",
-            response.result.accessToken
-          );
-
-          console.log(
-            "저장된 accessToken:",
-            localStorage.getItem(
-              "accessToken"
-            )
-          );
-        } else {
-          console.error(
-            "로그인은 성공했지만 accessToken이 응답에 없습니다."
-          );
-        }
-
-        setShowResult(true);
-        return;
-      }
-
-      alert(
-        response.message ||
-        "로그인에 실패했습니다."
-      );
-
-    } catch (error) {
-      console.error(
-        "로그인 실패:",
-        error.response?.data || error
-      );
-
-      alert(
-        error.response?.data?.message ||
-        "아이디 또는 비밀번호를 확인해주세요."
-      );
-    }
-  };
-
-  const handleSignupSubmit = async (e) => {
-    e.preventDefault();
-
-    if (signupPw !== signupPwConfirm) {
-      alert('비밀번호가 일치하지 않습니다.');
-      return;
-    }
-
-    try {
-      const response = await post(
-        config.AUTH.SIGNUP,
-        {
-          username: signupId,
-          password: signupPw,
-        }
-      );
-
-      console.log('회원가입 응답:', response);
-
-      if (response.isSuccess) {
-        alert('회원가입이 완료되었습니다.');
-
-        setLoginId(signupId);
-        setAuthMode('login');
-      } else {
-        alert(response.message || '회원가입에 실패했습니다.');
-      }
-
-    } catch (error) {
-      console.error(
-        '회원가입 실패:',
-        error.response?.data || error
-      );
-
-      alert(
-        error.response?.data?.message ||
-        '회원가입에 실패했습니다.'
-      );
-    }
-  };
-
-  const handleCheckUsername = async () => {
-    if (!signupId.trim()) {
-      alert('아이디를 입력해주세요.');
-      return;
-    }
-
-    try {
-      const response = await get(
-        config.AUTH.CHECK_USERNAME,
-        {
-          username: signupId,
-        }
-      );
-
-      console.log('아이디 중복 확인 응답:', response);
-
-      if (response.isSuccess) {
-        if (response.result?.available) {
-          alert('사용 가능한 아이디입니다.');
-        } else {
-          alert('이미 사용 중인 아이디입니다.');
-        }
-      } else {
-        alert(
-          response.message ||
-          '아이디 중복 확인에 실패했습니다.'
-        );
-      }
-
-    } catch (error) {
-      console.error(
-        '아이디 중복 확인 실패:',
-        error.response?.data || error
-      );
-
-      alert(
-        error.response?.data?.message ||
-        '아이디 중복 확인에 실패했습니다.'
-      );
     }
   };
 
@@ -330,78 +164,8 @@ const McmCheck = () => {
     return (
       <ResultView
         onGoToLounge={() => navigate('/owner-lounge')}
-        surveyAnswers={selectedAnswers} // 4. 설문 답변 객체를 ResultView로 전달
+        surveyAnswers={selectedAnswers}
       />
-    );
-  }
-
-  if (isCompleted) {
-    return (
-      <div className="mcm-check-container" style={{ backgroundImage: `url(${bgImage})` }}>
-        <div 
-          className="mcm-header-logo" 
-          onClick={() => navigate('/')} 
-          style={{ cursor: 'pointer' }}
-        >
-          MCM LOUNGE
-        </div>
-        <div className="mcm-check-box" style={{ justifyContent: 'center', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '20px' }}>BOARDING COMPLETE</h2>
-          <p style={{ color: '#666', fontSize: '16px' }}>고객님의 여행 준비가 완료되었습니다.</p>
-        </div>
-
-        <div className="login-popup-overlay">
-          <div className="login-modal-box">
-            <div className="modal-logo-wrapper">
-              <img src={logoImg} alt="MCM Logo" className="modal-logo-img" />
-            </div>
-
-            {authMode === 'main' && (
-              <>
-                <p className="modal-desc">로그인하면 나만의 AI 럭셔리 분석 결과를 확인할 수 있어요.</p>
-                <button type="button" className="login-action-btn" onClick={() => setAuthMode('login')}>로그인하기</button>
-                <a href="#signup" className="signup-link" onClick={(e) => { e.preventDefault(); setAuthMode('signup'); }}>회원가입</a>
-              </>
-            )}
-
-            {authMode === 'login' && (
-              <form onSubmit={handleLoginSubmit} className="login-input-form">
-                <input type="text" placeholder="아이디를 입력하세요." value={loginId} onChange={(e) => setLoginId(e.target.value)} className="login-text-input" required />
-                <input type="password" placeholder="비밀번호를 입력하세요." value={loginPw} onChange={(e) => setLoginPw(e.target.value)} className="login-text-input" required />
-                <button type="submit" className="login-action-btn">로그인</button>
-                <a href="#back" className="signup-link" onClick={(e) => { e.preventDefault(); setAuthMode('main'); }}>돌아가기</a>
-              </form>
-            )}
-
-            {authMode === 'signup' && (
-              <form onSubmit={handleSignupSubmit} className="signup-input-form">
-                <div className="signup-input-row">
-                  <input type="text" placeholder="아이디" value={signupId} onChange={(e) => setSignupId(e.target.value)} className="login-text-input" required />
-                  <button
-                    type="button"
-                    className="duplicate-check-btn"
-                    onClick={handleCheckUsername}
-                  >
-                    중복확인
-                  </button>
-                </div>
-
-                <input type="password" placeholder="비밀번호" value={signupPw} onChange={(e) => setSignupPw(e.target.value)} className="login-text-input" required />
-
-                <input type="password" placeholder="비밀번호 재확인" value={signupPwConfirm} onChange={(e) => setSignupPwConfirm(e.target.value)} className="login-text-input" required />
-                {signupPw && signupPwConfirm && (
-                  <span className={`input-guide-text ${signupPw === signupPwConfirm ? 'success' : 'error'}`}>
-                    {signupPw === signupPwConfirm ? '✓ 비밀번호가 일치합니다.' : '✕ 비밀번호가 일치하지 않습니다.'}
-                  </span>
-                )}
-
-                <button type="submit" className="login-action-btn" style={{ marginTop: '10px' }}>가입하기</button>
-                <a href="#back" className="signup-link" onClick={(e) => { e.preventDefault(); setAuthMode('main'); }}>로그인으로 돌아가기</a>
-              </form>
-            )}
-          </div>
-        </div>
-      </div>
     );
   }
 
