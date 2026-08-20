@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import html2canvas from "html2canvas";
 
 import { get, post } from "./api";
@@ -32,15 +33,13 @@ let heartbeatRequestPromise = null;
 let lastHeartbeatKey = null;
 
 function Route() {
+    const navigate = useNavigate();
     const successTicketRef = useRef(null);
     const audioRef = useRef(null);
 
     const [page, setPage] = useState("focus1");
 
-    /* =========================================
-       타이머
-    ========================================= */
-
+    // 타이머
     const [endTimeMs, setEndTimeMs] = useState(null);
     const [remainingSeconds, setRemainingSeconds] = useState(0);
     const [totalFocusSeconds, setTotalFocusSeconds] = useState(0);
@@ -52,30 +51,18 @@ function Route() {
     const totalBreakSecondsRef = useRef(0);
     const passSavedRef = useRef(false);
 
-    /* =========================================
-       선택한 항공편
-    ========================================= */
-
+    // 선택한 항공편
     const [selectedFlightInfo, setSelectedFlightInfo] =
         useState(null);
 
-    /* =========================================
-       음악
-    ========================================= */
-
+    // 음악
     const [musicOn, setMusicOn] = useState(true);
 
-    /* =========================================
-       간식
-    ========================================= */
-
+    // 간식
     const [showTeaModal, setShowTeaModal] = useState(false);
     const [selectedDrink, setSelectedDrink] = useState(null);
 
-    /* =========================================
-       상품 팝업
-    ========================================= */
-
+    // 상품 팝업
     const [showProductModal, setShowProductModal] =
         useState(false);
 
@@ -83,10 +70,7 @@ function Route() {
     const [productLoading, setProductLoading] =
         useState(false);
 
-    /* =========================================
-       성공 화면
-    ========================================= */
-
+    // 성공 화면
     const [showSuccessModal, setShowSuccessModal] =
         useState(false);
 
@@ -96,31 +80,14 @@ function Route() {
     const [successPage, setSuccessPage] =
         useState("focus1");
 
-    /* =========================================
-       Presence 현재 이용 인원
-    ========================================= */
-
+    // 현재 이용 인원
     const [loungePeople, setLoungePeople] = useState(0);
     const [flightPeople, setFlightPeople] = useState(0);
-
-    /* =========================================
-    Presence Heartbeat
-
-    focus1 / focus2 / mcm = LOUNGE
-    takeoff = FLIGHT
-
-    같은 라운지 내부 페이지 이동 시
-    heartbeat 재호출하지 않음
-
-    LOUNGE ↔ FLIGHT 전환 시에만 즉시 호출
-    이후 1분마다 호출
-    ========================================= */
 
     const presenceTheme =
         page === "takeoff"
             ? "FLIGHT"
             : "LOUNGE";
-
 
     useEffect(() => {
         let isMounted = true;
@@ -140,7 +107,6 @@ function Route() {
                         ? "USER"
                         : "GUEST"
                 }`;
-
             try {
                 console.log(
                     "Heartbeat 요청 준비:",
@@ -150,11 +116,6 @@ function Route() {
                         hasAccessToken,
                     }
                 );
-
-
-                /*
-                * StrictMode 중복 요청 방지
-                */
                 if (
                     !heartbeatRequestPromise ||
                     lastHeartbeatKey !==
@@ -185,12 +146,6 @@ function Route() {
                     const cleanupHeartbeat = () => {
                         window.setTimeout(
                             () => {
-                                /*
-                                * 이 요청이 아직 현재 요청일 때만 제거
-                                *
-                                * 그 사이 새로운 heartbeat 요청이 생겼다면
-                                * 새로운 요청은 건드리지 않음
-                                */
                                 if (
                                     heartbeatRequestPromise ===
                                     currentHeartbeatPromise
@@ -202,41 +157,26 @@ function Route() {
                             1000
                         );
                     };
-
-
-                    /*
-                    * 성공하든 실패하든 cleanup 실행
-                    *
-                    * finally()에서 생길 수 있는
-                    * 처리되지 않은 Promise rejection 방지
-                    */
                     currentHeartbeatPromise.then(
                         cleanupHeartbeat,
                         cleanupHeartbeat
                     );
-
                 } else {
                     console.log(
                         "중복 Heartbeat 요청 방지됨"
                     );
                 }
 
-
                 const response =
                     await heartbeatRequestPromise;
-
 
                 console.log(
                     "Heartbeat API 응답:",
                     response
                 );
-
-
                 if (!isMounted) {
                     return;
                 }
-
-
                 if (
                     response?.isSuccess &&
                     response?.result
@@ -249,7 +189,6 @@ function Route() {
                         response.result
                             .flightCount;
 
-
                     if (
                         typeof loungeCount ===
                         "number"
@@ -258,8 +197,6 @@ function Route() {
                             loungeCount
                         );
                     }
-
-
                     if (
                         typeof flightCount ===
                         "number"
@@ -268,19 +205,15 @@ function Route() {
                             flightCount
                         );
                     }
-
-
                     console.log(
                         "현재 라운지 인원:",
                         loungeCount
                     );
-
                     console.log(
                         "현재 비행기 인원:",
                         flightCount
                     );
                 }
-
             } catch (error) {
                 console.error(
                     "Heartbeat 요청 실패:",
@@ -289,24 +222,13 @@ function Route() {
                 );
             }
         };
-
-
-        /*
-        * LOUNGE 또는 FLIGHT 진입 시 즉시 1번
-        */
         sendHeartbeat();
 
-
-        /*
-        * 같은 장소에 머무는 동안
-        * 1분마다 갱신
-        */
         const heartbeatInterval =
             window.setInterval(
                 sendHeartbeat,
                 60_000
             );
-
 
         return () => {
             isMounted = false;
@@ -315,36 +237,24 @@ function Route() {
                 heartbeatInterval
             );
         };
-
     }, [presenceTheme]);
 
-    /* =========================================
-       현재 페이지 BGM
-    ========================================= */
-
+    // 현재 페이지 BGM
     const getCurrentBgm = () => {
         if (page === "focus1") {
             return focusAirportBgm;
         }
-
         if (page === "focus2") {
             return focus2Bgm;
         }
-
         if (page === "mcm") {
             return focus1Bgm;
         }
-
         if (page === "takeoff") {
             return takeoffBgm;
         }
-
         return focusAirportBgm;
     };
-
-    /* =========================================
-       음악 재생 보장
-    ========================================= */
 
     const ensureMusicPlaying = () => {
         const audio =
@@ -353,7 +263,6 @@ function Route() {
         if (!audio || !musicOn) {
             return;
         }
-
         if (audio.paused) {
             audio.volume = 0.5;
 
@@ -368,28 +277,20 @@ function Route() {
         }
     };
 
-    /* =========================================
-       페이지 변경 시 BGM 변경
-    ========================================= */
-
+    // 페이지 변경 시 BGM 변경
     useEffect(() => {
         const audio =
             audioRef.current;
-
         if (!audio) {
             return;
         }
-
         audio.pause();
         audio.currentTime = 0;
-
         if (!musicOn) {
             return;
         }
-
         audio.load();
         audio.volume = 0.5;
-
         audio.play().catch(
             (error) => {
                 console.log(
@@ -399,10 +300,6 @@ function Route() {
             }
         );
     }, [page, musicOn]);
-
-    /* =========================================
-       로컬 날짜 문자열
-    ========================================= */
 
     const getLocalDateTime = (
         date = new Date()
@@ -441,32 +338,25 @@ function Route() {
         );
     };
 
-    /* =========================================
-       저장된 타이머 불러오기
-    ========================================= */
-
+    // 저장된 타이머 불러오기
     useEffect(() => {
         try {
             const savedTimer =
                 localStorage.getItem(
                     TIMER_STORAGE_KEY
                 );
-
             if (!savedTimer) {
                 return;
             }
-
             const parsedTimer =
                 JSON.parse(
                     savedTimer
                 );
-
             if (
                 !parsedTimer?.endTimeMs
             ) {
                 return;
             }
-
             const diffSeconds =
                 Math.ceil(
                     (
@@ -474,22 +364,18 @@ function Route() {
                         Date.now()
                     ) / 1000
                 );
-
             if (diffSeconds > 0) {
                 setEndTimeMs(
                     parsedTimer.endTimeMs
                 );
-
                 setRemainingSeconds(
                     diffSeconds
                 );
-
                 setTotalFocusSeconds(
                     parsedTimer
                         .totalFocusSeconds ||
                     diffSeconds
                 );
-
                 if (
                     parsedTimer.startedAt
                 ) {
@@ -514,10 +400,7 @@ function Route() {
         }
     }, []);
 
-    /* =========================================
-       타이머 시작
-    ========================================= */
-
+    // 타이머 시작
     const startTimer = (
         hours,
         minutes
@@ -529,7 +412,6 @@ function Route() {
                 hours * 60 +
                 minutes
             ) * 60;
-
         if (totalSeconds <= 0) {
             return;
         }
@@ -552,22 +434,17 @@ function Route() {
         setEndTimeMs(
             nextEndTimeMs
         );
-
         setRemainingSeconds(
             totalSeconds
         );
-
         setTotalFocusSeconds(
             totalSeconds
         );
-
         setIsPaused(false);
         pausedSecondsRef.current = 0;
-
         setShowSuccessModal(
             false
         );
-
         localStorage.setItem(
             TIMER_STORAGE_KEY,
             JSON.stringify({
@@ -581,19 +458,14 @@ function Route() {
         );
     };
 
-    /* =========================================
-       일시정지 / 재시작
-    ========================================= */
-
+    // 일시정지 / 재시작
     const togglePause = () => {
         ensureMusicPlaying();
-
         if (
             remainingSeconds <= 0
         ) {
             return;
         }
-
         if (!isPaused) {
             pausedSecondsRef.current =
                 remainingSeconds;
@@ -606,7 +478,6 @@ function Route() {
             localStorage.removeItem(
                 TIMER_STORAGE_KEY
             );
-
             return;
         }
 
@@ -630,7 +501,6 @@ function Route() {
             pauseStartedAtRef.current =
                 null;
         }
-
         if (
             resumeSeconds <= 0
         ) {
@@ -644,11 +514,9 @@ function Route() {
         setEndTimeMs(
             nextEndTimeMs
         );
-
         setRemainingSeconds(
             resumeSeconds
         );
-
         setIsPaused(false);
 
         localStorage.setItem(
@@ -668,48 +536,31 @@ function Route() {
         finishedPage
     ) => {
 
-        /* =========================================
-        게스트는 포커스 기록 저장 X
-        ========================================= */
-
         const accessToken =
             localStorage.getItem(
                 "accessToken"
             );
-
         if (!accessToken) {
             console.log(
                 "게스트 사용자이므로 포커스 기록을 저장하지 않습니다."
             );
-
             return;
         }
-
-
         if (
             passSavedRef.current
         ) {
             return;
         }
-
-
         if (!startedAt) {
             console.error(
                 "포커스 패스 저장 실패: 시작 시간이 없습니다."
             );
-
             return;
         }
-
-
-        passSavedRef.current =
-            true;
-
+        passSavedRef.current = true;
 
         let breakSeconds =
             totalBreakSecondsRef.current;
-
-
         if (
             isPaused &&
             pauseStartedAtRef.current
@@ -724,14 +575,11 @@ function Route() {
                 );
         }
 
-
         const isFlight =
             finishedPage ===
             "takeoff";
 
-
         const requestBody = {
-
             themeType:
                 isFlight
                     ? "FLIGHT"
@@ -757,13 +605,10 @@ function Route() {
             endedAt:
                 getLocalDateTime(),
         };
-
-
         if (
             isFlight &&
             selectedFlightInfo
         ) {
-
             requestBody.flightNumber =
                 selectedFlightInfo
                     .flightNumber;
@@ -780,23 +625,17 @@ function Route() {
                 selectedFlightInfo
                     .departureTime;
         }
-
-
         console.log(
             "포커스 패스 API URL:",
             config
                 .FOCUSRECORD
                 .PASS_POST
         );
-
         console.log(
             "포커스 패스 요청값:",
             requestBody
         );
-
-
         try {
-
             const response =
                 await post(
                     config
@@ -804,13 +643,10 @@ function Route() {
                         .PASS_POST,
                     requestBody
                 );
-
-
             console.log(
                 "포커스 패스 저장 성공:",
                 response
             );
-
             } catch (error) {
                 console.error(
                     "포커스 패스 저장 실패:",
@@ -827,10 +663,6 @@ function Route() {
             totalFocusSeconds,
             selectedFlightInfo,
         ]);
-
-    /* =========================================
-       타이머 카운트다운
-    ========================================= */
 
     useEffect(() => {
         if (
@@ -899,18 +731,12 @@ function Route() {
         saveFocusPass,
     ]);
 
-    /* =========================================
-       음악 ON / OFF
-    ========================================= */
-
     const toggleMusic = () => {
         const audio =
             audioRef.current;
-
         if (!audio) {
             return;
         }
-
         if (musicOn) {
             audio.pause();
             setMusicOn(false);
@@ -929,10 +755,6 @@ function Route() {
             );
         }
     };
-
-    /* =========================================
-       간식에서 연결된 상품 ID
-    ========================================= */
 
     const getSelectedProductId = () => {
         if (!selectedDrink) {
@@ -981,10 +803,6 @@ function Route() {
 
         return 1;
     };
-
-    /* =========================================
-       상품 상세 API
-    ========================================= */
 
     const fetchProductDetail = async (
         productId
@@ -1048,17 +866,9 @@ function Route() {
         }
     };
 
-    /* =========================================
-    지갑 클릭
-    ========================================= */
-
     const handleProductClick = () => {
         ensureMusicPlaying();
 
-        /*
-        * 아직 간식을 선택하지 않은 경우
-        * 상품 API 호출하지 않음
-        */
         if (!selectedDrink) {
             setProduct(null);
             setProductLoading(false);
@@ -1087,10 +897,6 @@ function Route() {
         );
     };
 
-    /* =========================================
-       음료 주문 완료
-    ========================================= */
-
     const handleDrinkOrder = (
         drink
     ) => {
@@ -1109,10 +915,6 @@ function Route() {
 
         setProduct(null);
     };
-
-    /* =========================================
-       페이지 이동
-    ========================================= */
 
     const goFocus1 = () => {
         ensureMusicPlaying();
@@ -1133,10 +935,6 @@ function Route() {
         ensureMusicPlaying();
         setPage("takeoff");
     };
-
-    /* =========================================
-       시간 표시
-    ========================================= */
 
     const formatTime = (
         seconds
@@ -1216,10 +1014,6 @@ function Route() {
         );
     };
 
-    /* =========================================
-       오늘 날짜
-    ========================================= */
-
     const getTodayDate = () => {
         const today =
             new Date();
@@ -1241,10 +1035,6 @@ function Route() {
             `${year}.${month}.${day}`
         );
     };
-
-    /* =========================================
-       성공 장소
-    ========================================= */
 
     const getSuccessPlace = () => {
         if (
@@ -1273,10 +1063,6 @@ function Route() {
 
         return "";
     };
-
-    /* =========================================
-       티켓 저장
-    ========================================= */
 
     const handleSaveTicket =
         async () => {
@@ -1324,10 +1110,6 @@ function Route() {
     const timerActive =
         remainingSeconds > 0;
 
-    /* =========================================
-       상품 모달 값
-    ========================================= */
-
     const productImageUrl =
         product?.imageUrl ||
         product?.productImageUrl ||
@@ -1353,8 +1135,14 @@ function Route() {
 
     return (
         <div className="lounge-route">
-
-            {/* BGM */}
+            <button
+                type="button"
+                className="lounge-home-button"
+                onClick={() => navigate("/")}
+                aria-label="홈으로 이동"
+            >
+                HOME
+            </button>
             <audio
                 ref={audioRef}
                 className="lounge-route-audio"
@@ -1362,10 +1150,7 @@ function Route() {
                 preload="auto"
                 src={getCurrentBgm()}
             />
-
-            {/* 현재 이용 인원 */}
             <div className="lounge-people">
-
                 <div className="lounge-people-icon">
                     <img
                         className="lounge-people-icon-image"
@@ -1486,7 +1271,6 @@ function Route() {
                             className="lounge-control-button lounge-pause-button"
                             onClick={togglePause}
                         >
-
                             <span className="lounge-pause-icon">
                                 {
                                     isPaused
@@ -1508,8 +1292,6 @@ function Route() {
                     </div>
                 </div>
             )}
-
-            {/* MCM 지갑 */}
             <button
                 type="button"
                 className={
@@ -1531,8 +1313,6 @@ function Route() {
                     alt="MCM Bag"
                 />
             </button>
-
-            {/* 주문 전 점선 물병 */}
             {!selectedDrink && (
                 <button
                     type="button"
@@ -1552,8 +1332,6 @@ function Route() {
                     />
                 </button>
             )}
-
-            {/* 주문 후 음료 */}
             {selectedDrink && (
                 <button
                     type="button"
@@ -1597,11 +1375,6 @@ function Route() {
                     onOrder={handleDrinkOrder}
                 />
             )}
-
-            {/* =========================================
-                상품 상세 팝업
-            ========================================= */}
-
             {showProductModal && (
                 <div
                     className="lounge-product-modal-overlay"
@@ -1627,11 +1400,6 @@ function Route() {
                             ×
                         </button>
 
-
-                        {/* =========================================
-                            간식 선택 전
-                        ========================================= */}
-
                         {!selectedDrink ? (
                             <div className="lounge-product-empty">
                                 간식을 선택해주세요
@@ -1639,20 +1407,11 @@ function Route() {
 
                         ) : productLoading ? (
 
-                            /* =========================================
-                            상품 정보 로딩
-                            ========================================= */
-
                             <div className="lounge-product-loading">
                                 상품 정보를 불러오는 중입니다...
                             </div>
 
                         ) : product ? (
-
-                            /* =========================================
-                            간식 선택 후 상품 정보
-                            ========================================= */
-
                             <>
                                 <img
                                     className="lounge-product-modal-image"
@@ -1678,9 +1437,6 @@ function Route() {
                                 <div className="lounge-product-modal-description">
                                     {productDescription}
                                 </div>
-
-
-                                {/* 제품 자세히보기 */}
                                 <button
                                     type="button"
                                     className="lounge-product-modal-button"
@@ -1714,9 +1470,6 @@ function Route() {
                                         〉
                                     </span>
                                 </button>
-
-
-                                {/* AI 수납 확인 */}
                                 <button
                                     type="button"
                                     className="lounge-product-modal-button"
@@ -1740,8 +1493,6 @@ function Route() {
                     </div>
                 </div>
             )}
-
-            {/* 현재 페이지 */}
             <div
                 className={
                     `lounge-page-container lounge-page-${page}`
@@ -1794,8 +1545,6 @@ function Route() {
                         )
                 }
             </div>
-
-            {/* SUCCESS */}
             {showSuccessModal && (
                 <div className="lounge-success-overlay">
 
