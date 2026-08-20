@@ -1,0 +1,103 @@
+html,
+body,
+#root {
+    margin: 0;
+    padding: 0;
+
+    width: 100%;
+
+    height: auto !important;
+    min-height: 100%;
+
+    overflow-x: hidden;
+    overflow-y: auto !important;
+}
+
+.focus-lounge-container {
+    position: relative;
+
+    width: 100%;
+
+    height: auto;
+    min-height: 100vh;
+
+    overflow: visible;
+}
+
+/* 비디오는 배경 */
+.focus-lounge-video {
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    z-index: 0;
+}
+
+/* 이 이미지가 실제 페이지 높이 결정 */
+.focus-lounge-overlay {
+    position: relative;
+
+    display: block;
+
+    width: 100%;
+    height: auto;
+
+    margin: 0;
+    padding: 0;
+
+    z-index: 1;
+}
+
+/* 중앙 blur */
+.focus-lounge-blur {
+    position: fixed;
+
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    display: block;
+
+    z-index: 2;
+
+    pointer-events: none;
+}
+
+.focus-lounge-button {
+    position: fixed;
+
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    background: transparent;
+
+    border: 0;
+    padding: 0;
+
+    cursor: pointer;
+
+    z-index: 10;
+}
+
+.focus-lounge-button-left {
+    left: 80px;
+}
+
+.focus-lounge-button-right {
+    right: 80px;
+}
+
+.focus-lounge-button-image {
+    display: block;
+
+    width: 100%;
+    height: auto;
+}
