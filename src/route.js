@@ -1177,9 +1177,6 @@ function Route() {
                 xrayBlob
             );
 
-            /*
-            * 이전 Blob URL 정리
-            */
             if (packingImage) {
                 URL.revokeObjectURL(
                     packingImage
