@@ -1060,18 +1060,6 @@ function Route() {
     const fetchPackingResult = async (
         itemCodes
     ) => {
-        const accessToken =
-            localStorage.getItem(
-                "accessToken"
-            );
-
-        if (!accessToken) {
-            alert(
-                "AI 수납 확인은 로그인 후 이용할 수 있습니다."
-            );
-
-            return;
-        }
 
         /*
         * ★ 이제 이 값 하나만 사용
