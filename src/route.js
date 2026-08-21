@@ -1055,9 +1055,7 @@ function Route() {
         }
     };
 
-    /* =========================================
-    AI Packing
-    ========================================= */
+    
 
     const fetchPackingResult = async (
         itemCodes
