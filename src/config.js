@@ -62,8 +62,8 @@ const config = {
   },
 
   AIPACKING:{
-    XRAY: (loungeId) => `${BASE_URL}/api/packing/lounge/${loungeId}/xray-preview`,
-    CHECK: (loungeId) => `${BASE_URL}/api/packing/lounge/${loungeId}/check`,
+    XRAY: (packingProfileId) => `${BASE_URL}/api/packing/profiles/${packingProfileId}/xray-preview`,
+    CHECK: (packingProfileId) => `${BASE_URL}/api/packing/profiles/${packingProfileId}/check`,
     PROFILE: `${BASE_URL}/api/packing/profiles`,
     ITEMS: `${BASE_URL}/api/packing/items`,
   },

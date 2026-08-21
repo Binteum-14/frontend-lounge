@@ -155,24 +155,28 @@ function TeaModal({ onClose, onOrder }) {
             ) {
                 if (onOrder) {
                     onOrder({
-                        snackId: selectedItem,
+                        snackId:
+                            selectedItem,
 
-                        // 상세 API 이미지
                         snackImageUrl:
                             response.result.snackImageUrl,
 
                         productImageUrl:
                             response.result.productImageUrl,
-                        productVariantId: response.result.productVariantId,
 
-                        // 목록 API에서 가져온 타입
+                        productVariantId:
+                            response.result.productVariantId,
+
+                        // ★ 새 Packing API에서 사용할 ID
+                        packingProfileId:
+                            response.result.packingProfileId,
+
                         type:
                             selectedData.type,
 
                         name:
                             selectedData.name,
 
-                        // 혹시 상세 API 이미지가 없을 때 사용 가능
                         imageUrl:
                             selectedData.imageUrl,
                     });

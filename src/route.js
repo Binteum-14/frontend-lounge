@@ -75,6 +75,15 @@ function Route() {
     const [packingLoading, setPackingLoading] = useState(false);
     const [packingImage, setPackingImage] = useState(null);
 
+    const [packingItems, setPackingItems] =
+    useState([]);
+
+    const [selectedItemCodes, setSelectedItemCodes] =
+        useState([]);
+
+    const [packingCheckResult, setPackingCheckResult] =
+        useState(null);
+
     // 성공 화면
     const [showSuccessModal, setShowSuccessModal] =
         useState(false);
@@ -1014,6 +1023,7 @@ function Route() {
                 "상품 상세 API 응답:",
                 response
             );
+            console.log("상품 상세 result 전체:", response?.result);
 
             if (
                 response?.isSuccess &&
@@ -1046,150 +1056,116 @@ function Route() {
     };
 
     /* =========================================
-    AI Packing XRAY
+    AI Packing
     ========================================= */
 
-    const fetchPackingXray = async () => {
+    const fetchPackingResult = async (
+        itemCodes
+    ) => {
         const accessToken =
-            localStorage.getItem("accessToken");
+            localStorage.getItem(
+                "accessToken"
+            );
 
         if (!accessToken) {
             alert(
                 "AI 수납 확인은 로그인 후 이용할 수 있습니다."
             );
+
+            return;
+        }
+
+        /*
+        * ★ 이제 이 값 하나만 사용
+        *
+        * 간식 상세 API result.packingProfileId
+        * 예:
+        * L01 ~ L07
+        * F01 ~ F07
+        * P01 ~ P07
+        */
+        const packingProfileId =
+            selectedDrink?.packingProfileId;
+
+        console.log(
+            "사용할 Packing Profile ID:",
+            packingProfileId
+        );
+
+        if (!packingProfileId) {
+            console.error(
+                "packingProfileId가 없습니다.",
+                selectedDrink
+            );
+
+            return;
+        }
+
+        /*
+        * 아무 물건도 선택하지 않았으면
+        * 결과 초기화
+        */
+        if (
+            !itemCodes ||
+            itemCodes.length === 0
+        ) {
+            setPackingCheckResult(null);
+
+            if (packingImage) {
+                URL.revokeObjectURL(
+                    packingImage
+                );
+            }
+
+            setPackingImage(null);
+
             return;
         }
 
         try {
             setPackingLoading(true);
-            setPackingImage(null);
-
-            // 1. 먼저 Packing Profile 조회
-            const profileResponse =
-                await get(
-                    config.AIPACKING.PROFILE
-                );
 
             console.log(
-                "AI Packing PROFILE 응답:",
-                profileResponse
+                "AI Packing itemCodes:",
+                itemCodes
             );
 
-            // loungeId 후보
-            const profiles =
-                Array.isArray(profileResponse)
-                    ? profileResponse
-                    : profileResponse?.result;
+            /* =========================
+            1. CHECK API
+            ========================= */
 
-            if (!Array.isArray(profiles)) {
-                console.error(
-                    "PROFILE 응답이 배열이 아닙니다.",
-                    profileResponse
-                );
-
-                return;
-            }
-
-            /*
-            * 상품 상세 URL에서 SKU 추출
-            *
-            * 예:
-            * .../MWPAATN04BK001.html
-            * → MWPAATN04BK001
-            */
-            const detailUrl =
-                product?.detailUrl || "";
-
-            const skuMatch =
-                detailUrl.match(
-                    /([A-Z0-9]+)\.html/i
-                );
-
-            const currentSku =
-                skuMatch?.[1];
-
-            console.log(
-                "현재 상품 SKU:",
-                currentSku
-            );
-
-            if (!currentSku) {
-                console.error(
-                    "현재 상품에서 SKU를 찾을 수 없습니다.",
-                    product
-                );
-
-                return;
-            }
-
-            /*
-            * PROFILE 목록에서 같은 SKU의 가방 검색
-            */
-            const matchedProfile =
-                profiles.find(
-                    (profile) =>
-                        profile.sku === currentSku
-                );
-
-            console.log(
-                "매칭된 Packing Profile:",
-                matchedProfile
-            );
-
-            if (!matchedProfile) {
-                console.error(
-                    "현재 상품과 일치하는 Packing Profile이 없습니다.",
+            const checkResponse =
+                await post(
+                    config.AIPACKING.CHECK(
+                        packingProfileId
+                    ),
                     {
-                        currentSku,
-                        profiles,
+                        itemCodes,
                     }
                 );
 
-                return;
-            }
-
-            const loungeId =
-                matchedProfile.loungeId;
-
             console.log(
-                "AI Packing loungeId:",
-                loungeId
+                "AI Packing CHECK 응답:",
+                checkResponse
             );
 
-            console.log(
-                "AI Packing loungeId:",
-                loungeId
+            const checkResult =
+                checkResponse?.result ??
+                checkResponse;
+
+            setPackingCheckResult(
+                checkResult
             );
 
-            const itemsResponse =
-                await get(
-                    config.AIPACKING.ITEMS
-                );
 
-            console.log(
-                "AI Packing ITEMS 응답:",
-                itemsResponse
-            );
-
-            /*
-            * 테스트용으로 앞에서 3개 선택
-            */
-            const itemCodes =
-                itemsResponse
-                    .slice(0, 3)
-                    .map(
-                        (item) => item.code
-                    );
-
-            console.log(
-                "XRAY에 보낼 itemCodes:",
-                itemCodes
-            );
+            /* =========================
+            2. XRAY API
+            ========================= */
 
             const xrayBlob =
                 await postBlob(
                     config.AIPACKING.XRAY(
-                        loungeId
+                        packingProfileId
                     ),
                     {
                         itemCodes,
@@ -1200,6 +1176,15 @@ function Route() {
                 "AI Packing XRAY Blob:",
                 xrayBlob
             );
+
+            /*
+            * 이전 Blob URL 정리
+            */
+            if (packingImage) {
+                URL.revokeObjectURL(
+                    packingImage
+                );
+            }
 
             const imageUrl =
                 URL.createObjectURL(
@@ -1269,8 +1254,27 @@ function Route() {
         drink
     ) => {
         console.log(
+            "========== Route 주문 수신 =========="
+        );
+
+        console.log(
             "Route에서 받은 주문 상품:",
             drink
+        );
+
+        console.log(
+            "type:",
+            drink?.type
+        );
+
+        console.log(
+            "snackId:",
+            drink?.snackId
+        );
+
+        console.log(
+            "packingProfileId:",
+            drink?.packingProfileId
         );
 
         setSelectedDrink(
@@ -1898,23 +1902,30 @@ function Route() {
                                <button
                                     type="button"
                                     className="lounge-product-modal-button"
-                                    onClick={() => {
-                                        const isGuest =
-                                            localStorage.getItem(
-                                                "isGuest"
-                                            ) === "true";
-
+                                    onClick={async () => {
                                         const accessToken =
                                             localStorage.getItem(
                                                 "accessToken"
                                             );
 
-                                        if (
-                                            isGuest ||
-                                            !accessToken
-                                        ) {
+                                        if (!accessToken) {
                                             alert(
                                                 "AI 수납 확인은 로그인 후 이용할 수 있습니다."
+                                            );
+
+                                            return;
+                                        }
+
+                                        if (
+                                            !selectedDrink?.packingProfileId
+                                        ) {
+                                            console.error(
+                                                "packingProfileId가 없습니다.",
+                                                selectedDrink
+                                            );
+
+                                            alert(
+                                                "수납 정보를 찾을 수 없습니다."
                                             );
 
                                             return;
@@ -1923,7 +1934,32 @@ function Route() {
                                         setShowProductModal(false);
                                         setShowPackingModal(true);
 
-                                        fetchPackingXray();
+                                        setSelectedItemCodes([]);
+                                        setPackingCheckResult(null);
+                                        setPackingImage(null);
+
+                                        try {
+                                            const response =
+                                                await get(
+                                                    config.AIPACKING.ITEMS
+                                                );
+
+                                            const items =
+                                                Array.isArray(response)
+                                                    ? response
+                                                    : response?.result || [];
+
+                                            setPackingItems(
+                                                items
+                                            );
+
+                                        } catch (error) {
+                                            console.error(
+                                                "Packing ITEMS 조회 실패:",
+                                                error.response?.data ||
+                                                error
+                                            );
+                                        }
                                     }}
                                 >
                                     <span>
@@ -1976,6 +2012,87 @@ function Route() {
                         <div className="lounge-packing-title">
                             AI PACKING
                         </div>
+                        <div className="lounge-packing-items">
+
+                            {packingItems.map(
+                                (item) => (
+                                    <label
+                                        key={item.code}
+                                        className="lounge-packing-item"
+                                    >
+                                        <input
+                                            type="checkbox"
+
+                                            checked={
+                                                selectedItemCodes.includes(
+                                                    item.code
+                                                )
+                                            }
+
+                                            onChange={() => {
+                                                let nextCodes;
+
+                                                if (
+                                                    selectedItemCodes.includes(
+                                                        item.code
+                                                    )
+                                                ) {
+                                                    nextCodes =
+                                                        selectedItemCodes.filter(
+                                                            (code) =>
+                                                                code !==
+                                                                item.code
+                                                        );
+                                                } else {
+                                                    nextCodes = [
+                                                        ...selectedItemCodes,
+                                                        item.code,
+                                                    ];
+                                                }
+
+                                                setSelectedItemCodes(
+                                                    nextCodes
+                                                );
+
+                                                /*
+                                                * 체크할 때마다
+                                                * CHECK + XRAY 다시 호출
+                                                */
+                                                fetchPackingResult(
+                                                    nextCodes
+                                                );
+                                            }}
+                                        />
+
+                                        <span>
+                                            {item.name}
+                                        </span>
+
+                                    </label>
+                                )
+                            )}
+
+                        </div>
+                        {packingCheckResult && (
+                            <div className="lounge-packing-result-info">
+
+                                <div>
+                                    수납률:{" "}
+                                    {packingCheckResult.usedSpaceRatio}
+                                </div>
+
+                                <div>
+                                    적합도:{" "}
+                                    {packingCheckResult.fitScore}
+                                </div>
+
+                                <div>
+                                    상태:{" "}
+                                    {packingCheckResult.status}
+                                </div>
+
+                            </div>
+                        )}
 
                         {packingLoading ? (
                             <div className="lounge-packing-loading">
