@@ -1900,18 +1900,16 @@ function Route() {
                                     type="button"
                                     className="lounge-product-modal-button"
                                     onClick={async () => {
-                                        const accessToken =
-                                            localStorage.getItem(
-                                                "accessToken"
-                                            );
 
-                                        if (!accessToken) {
-                                            alert(
-                                                "AI 수납 확인은 로그인 후 이용할 수 있습니다."
-                                            );
+                                        console.log(
+                                            "AI 수납 버튼 클릭 selectedDrink:",
+                                            selectedDrink
+                                        );
 
-                                            return;
-                                        }
+                                        console.log(
+                                            "AI 수납 버튼 packingProfileId:",
+                                            selectedDrink?.packingProfileId
+                                        );
 
                                         if (
                                             !selectedDrink?.packingProfileId
