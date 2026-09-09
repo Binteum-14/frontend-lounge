@@ -99,31 +99,6 @@ function Route() {
     const [loungePeople, setLoungePeople] = useState(0);
     const [flightPeople, setFlightPeople] = useState(0);
 
-    const restartFocus = () => {
-        ensureMusicPlaying();
-
-        setEndTimeMs(null);
-        setRemainingSeconds(0);
-        setTotalFocusSeconds(0);
-        setStartedAt(null);
-
-        setIsPaused(false);
-        pausedSecondsRef.current = 0;
-        pauseStartedAtRef.current = null;
-
-        totalBreakSecondsRef.current = 0;
-        passSavedRef.current = false;
-
-        setSelectedFlightInfo(null);
-        setShowSuccessModal(false);
-
-        localStorage.removeItem(
-            TIMER_STORAGE_KEY
-        );
-
-        setPage("focus1");
-        setOpenFlightModal(true);
-    };
     /* =========================================
     Presence Heartbeat
 
@@ -1696,19 +1671,6 @@ function Route() {
                                 }
                             </span>
 
-                        </button>
-                        <button
-                            type="button"
-                            className="lounge-control-button lounge-restart-button"
-                            onClick={restartFocus}
-                        >
-                            <span className="lounge-restart-icon">
-                                ↻
-                            </span>
-
-                            <span className="lounge-restart-text">
-                                새로 시작
-                            </span>
                         </button>
 
                     </div>

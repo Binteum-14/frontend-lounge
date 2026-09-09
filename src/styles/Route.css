@@ -270,9 +270,7 @@
 
     cursor: pointer;
 
-    /* 버튼 자체는 클릭 가능 */
-    pointer-events: auto;
-
+    /* 이미지 위치 기준점 */
     overflow: visible;
 }
 
@@ -289,10 +287,9 @@
 
     object-fit: contain;
 
-    pointer-events: auto;
-    cursor: pointer;
+    pointer-events: none;
 
-    transform: translate(30px, 50px);
+    transform: none;
 }
 
 .lounge-product-modal-overlay {
@@ -864,10 +861,6 @@
     transform: translate(230px, 80px);
 }
 
-.lounge-restart-text {
-    margin-left: 12px;
-}
-
 /* =========================================
    간식 선택 전 상품 팝업 문구
 ========================================= */
@@ -1039,5 +1032,4 @@
     .lounge-success-title {
         text-align: center;
     }
-    
 }
