@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { createVisitPass } from '../../api';
 import './VisitPassView.css';
 
@@ -8,20 +8,20 @@ import bgImage from '../../assets/images/MCMCheckBackground.png';
 
 const VisitPassView = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   
   const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState(null); // 백엔드 응답을 담을 상태 추가
+  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
     const fetchPass = async () => {
       setLoading(true);
       try {
-        // 💡 주의: 발급 API는 recommendationProductId 파라미터가 필요합니다. 
-        // 이전 페이지(진단 등)에서 넘어온 상품 ID가 있다면 넣어주어야 합니다.
-        const recommendationProductId = 1; // 예시 ID (실제 전달받은 ID로 변경 필요)
+        const recommendationProductId = location.state?.recommendationProductId;
         
         const response = await createVisitPass(recommendationProductId);
         setUserData(response);
+        console.log("Visit Pass 응답 데이터:", response); 
       } catch (error) {
         console.error("Visit Pass 발급 실패:", error);
       } finally {
@@ -30,7 +30,7 @@ const VisitPassView = () => {
     };
 
     fetchPass();
-  }, []);
+  }, [location.state]);
 
   return (
     <div
@@ -55,6 +55,21 @@ const VisitPassView = () => {
       <div className="visit-pass-content">
         <h2 className="pass-ready-title">YOUR VISIT PASS IS READY.</h2>
         
+        {!loading && userData?.result && (
+          <div className="recommended-product-info" style={{ textAlign: 'center', marginBottom: '15px', color: '#fff' }}>
+            {userData.result.productImageUrl && (
+              <img 
+                src={userData.result.productImageUrl} 
+                alt="Recommended Bag" 
+                style={{ width: '80px', height: '80px', objectFit: 'contain', marginBottom: '8px' }} 
+              />
+            )}
+            <p style={{ fontSize: '14px', fontWeight: 'bold' }}>
+              {userData.result.productName}
+            </p>
+          </div>
+        )}
+
         <div className="ticket-img-wrapper">
           <img src={ticketImg} alt="MCM VISIT PASS" />
 
@@ -63,7 +78,7 @@ const VisitPassView = () => {
               <span style={{ fontSize: '11px', color: '#666' }}>생성 중...</span>
             ) : (
               <img
-                src={userData?.result?.qrImageUrl} // result를 거치도록 수정
+                src={userData?.result?.qrImageUrl} 
                 alt="Visit Pass QR Code"
                 style={{ width: '100%', height: '100%', objectFit: 'contain' }}
               />

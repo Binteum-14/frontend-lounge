@@ -111,7 +111,7 @@ const McmCheck = () => {
       setIsAnalyzing(true);
       setTimeout(() => {
         setIsAnalyzing(false);
-        setShowResult(true); // 분석 완료 후 바로 결과 화면으로 이동
+        setShowResult(true); 
       }, 2500);
     }
   };
