@@ -206,21 +206,22 @@ api.interceptors.response.use(
   },
 
   (error) => {
-
     if (
       error.response?.status === 401
     ) {
-
       console.error(
-        "401 Unauthorized"
+        "401 Unauthorized - 인증 토큰이 만료되었거나 유효하지 않습니다."
       );
-
       console.error(
         "서버 응답:",
         error.response?.data
       );
-    }
 
+      // 👇 [수정] 401 에러가 나면 쿠키와 로컬스토리지의 토큰 및 로그인 플래그를 자동으로 제거합니다.
+      cookies.remove(ACCESS_TOKEN_KEY, { path: "/" });
+      localStorage.removeItem(ACCESS_TOKEN_KEY);
+      localStorage.removeItem("isLoggedIn");
+    }
 
     return Promise.reject(
       error
@@ -631,9 +632,10 @@ export const loginUser = async (username, password) => {
     if (response.isSuccess && response.result) {
       const { accessToken } = response.result;
       
-      // 쿠키와 로컬 스토리지 양쪽에 모두 저장되도록 추가
       cookies.set(ACCESS_TOKEN_KEY, accessToken, { path: "/" });
-      localStorage.setItem(ACCESS_TOKEN_KEY, accessToken); // <--- 이 줄 추가!
+      localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+      
+      localStorage.setItem("isLoggedIn", "true");
     }
 
     return response;
