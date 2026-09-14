@@ -73,6 +73,18 @@ const ResultView = ({ onGoToLounge, surveyAnswers }) => {
     });
   };
 
+  // 👇 추천 상품 ID를 state로 담아 Visit Pass 페이지로 안전하게 이동하도록 수정
+  const handleGoToVisitPass = () => {
+    if (!topProduct || !topProduct.productId) {
+      alert("추천 상품 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
+    navigate('/visit-pass', { 
+      state: { recommendationProductId: topProduct.productId } 
+    });
+  };
+
   return (
     <div className="result-container">
       <div className="result-header-area">
@@ -177,7 +189,8 @@ const ResultView = ({ onGoToLounge, surveyAnswers }) => {
       </div>
 
       <div className="result-footer-btn-area">
-        <button type="button" className="goto-lounge-btn" onClick={onGoToLounge}>
+        {/* 👇 onGoToLounge 대신 실제 productId를 넘겨주는 handleGoToVisitPass 연결 */}
+        <button type="button" className="goto-lounge-btn" onClick={handleGoToVisitPass}>
           오너 라운지로 입장하기
         </button>
       </div>

@@ -495,6 +495,7 @@ export const logoutUser = async () => {
   try {
     const response = await post(config.AUTH.LOGOUT);
     cookies.remove(ACCESS_TOKEN_KEY, { path: "/" });
+    localStorage.removeItem(ACCESS_TOKEN_KEY); 
     return response;
   } catch (error) {
     console.error("로그아웃 실패:", error);
@@ -628,10 +629,11 @@ export const loginUser = async (username, password) => {
     const response = await post('/api/auth/login', { username, password });
 
     if (response.isSuccess && response.result) {
-      // tokenType을 제외하고 accessToken만 구조 분해 할당
       const { accessToken } = response.result;
       
+      // 쿠키와 로컬 스토리지 양쪽에 모두 저장되도록 추가
       cookies.set(ACCESS_TOKEN_KEY, accessToken, { path: "/" });
+      localStorage.setItem(ACCESS_TOKEN_KEY, accessToken); // <--- 이 줄 추가!
     }
 
     return response;

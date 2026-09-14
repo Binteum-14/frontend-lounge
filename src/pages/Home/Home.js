@@ -51,6 +51,14 @@ function Home() {
       if (response.isSuccess) {
         alert("로그인에 성공했습니다!");
         
+        // ★ [수정 포인트] 백엔드에서 받아온 토큰을 쿠키(또는 로컬스토리지)에 저장해야 합니다!
+        // 백엔드 응답 구조에 따라 response.result.accessToken 이거나 response.data.accessToken 등일 수 있습니다.
+        // 예시로 response.result?.accessToken 이나 response.result 로 가정하고 작성합니다.
+        const token = response.result?.accessToken || response.result; 
+        if (token) {
+          cookies.set("accessToken", token, { path: "/" });
+        }
+
         localStorage.setItem("isLoggedIn", "true");
         setIsLoggedIn(true);
         
@@ -85,7 +93,7 @@ function Home() {
   };
 
   /* =========================================
-     메뉴 버튼 이동 핸들러들
+      메뉴 버튼 이동 핸들러들
   ========================================= */
   const handleGoToCheck = () => {
     if (isLoggedIn) {
