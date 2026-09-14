@@ -206,21 +206,22 @@ api.interceptors.response.use(
   },
 
   (error) => {
-
     if (
       error.response?.status === 401
     ) {
-
       console.error(
-        "401 Unauthorized"
+        "401 Unauthorized - 인증 토큰이 만료되었거나 유효하지 않습니다."
       );
-
       console.error(
         "서버 응답:",
         error.response?.data
       );
-    }
 
+      // 👇 [수정] 401 에러가 나면 쿠키와 로컬스토리지의 토큰 및 로그인 플래그를 자동으로 제거합니다.
+      cookies.remove(ACCESS_TOKEN_KEY, { path: "/" });
+      localStorage.removeItem(ACCESS_TOKEN_KEY);
+      localStorage.removeItem("isLoggedIn");
+    }
 
     return Promise.reject(
       error
@@ -495,6 +496,7 @@ export const logoutUser = async () => {
   try {
     const response = await post(config.AUTH.LOGOUT);
     cookies.remove(ACCESS_TOKEN_KEY, { path: "/" });
+    localStorage.removeItem(ACCESS_TOKEN_KEY); 
     return response;
   } catch (error) {
     console.error("로그아웃 실패:", error);
@@ -628,10 +630,12 @@ export const loginUser = async (username, password) => {
     const response = await post('/api/auth/login', { username, password });
 
     if (response.isSuccess && response.result) {
-      // tokenType을 제외하고 accessToken만 구조 분해 할당
       const { accessToken } = response.result;
       
       cookies.set(ACCESS_TOKEN_KEY, accessToken, { path: "/" });
+      localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+      
+      localStorage.setItem("isLoggedIn", "true");
     }
 
     return response;

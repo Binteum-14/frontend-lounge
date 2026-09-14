@@ -25,10 +25,18 @@ function Home() {
   // true면 회원가입 뷰, false면 로그인 뷰
   const [isSignup, setIsSignup] = useState(false);
 
-  // 로그인 상태 관리 (새로고침해도 유지되도록 localStorage 연동)
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    localStorage.getItem("isLoggedIn") === "true"
-  );
+  // 🌟 [수정 포인트] 로컬스토리지와 실제 쿠키 토큰이 모두 존재할 때만 true로 인정하고,
+  // 찌꺼기만 남아있다면 스스로 정리하여 '로그인' 버튼이 먼저 뜨도록 보정합니다.
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    const hasStorage = localStorage.getItem("isLoggedIn") === "true";
+    const hasCookieToken = !!cookies.get("accessToken");
+    
+    if (hasStorage && !hasCookieToken) {
+      localStorage.removeItem("isLoggedIn");
+      return false;
+    }
+    return hasStorage && hasCookieToken;
+  });
 
   // 입력폼 상태 관리
   const [formData, setFormData] = useState({
@@ -51,6 +59,11 @@ function Home() {
       if (response.isSuccess) {
         alert("로그인에 성공했습니다!");
         
+        const token = response.result?.accessToken || response.result; 
+        if (token) {
+          cookies.set("accessToken", token, { path: "/" });
+        }
+
         localStorage.setItem("isLoggedIn", "true");
         setIsLoggedIn(true);
         

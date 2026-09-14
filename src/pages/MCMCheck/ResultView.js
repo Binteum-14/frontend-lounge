@@ -9,10 +9,8 @@ const ResultView = ({ onGoToLounge, surveyAnswers }) => {
   const navigate = useNavigate(); 
 
   const [diagnosisResult, setDiagnosisResult] = useState(null);
-
   const [dotCount, setDotCount] = useState(1);
 
-  
   useEffect(() => {
     if (diagnosisResult) return; 
 
@@ -70,6 +68,20 @@ const ResultView = ({ onGoToLounge, surveyAnswers }) => {
   const handleGoToBagDetail = () => {
     navigate('/bag-detail', { 
       state: { products: diagnosisResult?.products } 
+    });
+  };
+
+  
+  const handleGoToVisitPass = () => {
+    const targetId = diagnosisResult?.recommendationId || diagnosisResult?.id;
+
+    if (!diagnosisResult || !targetId) {
+      alert("진단 결과 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
+    navigate('/visit-pass', { 
+      state: { recommendationId: targetId } 
     });
   };
 
@@ -177,7 +189,7 @@ const ResultView = ({ onGoToLounge, surveyAnswers }) => {
       </div>
 
       <div className="result-footer-btn-area">
-        <button type="button" className="goto-lounge-btn" onClick={onGoToLounge}>
+        <button type="button" className="goto-lounge-btn" onClick={handleGoToVisitPass}>
           오너 라운지로 입장하기
         </button>
       </div>

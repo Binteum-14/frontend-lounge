@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { createVisitPass } from '../../api';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { createVisitPass } from '../../api'; 
 import './VisitPassView.css';
 
 import ticketImg from '../../assets/images/VisitPass.png'; 
@@ -8,35 +8,53 @@ import bgImage from '../../assets/images/MCMCheckBackground.png';
 
 const VisitPassView = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   
   const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState(null); // 백엔드 응답을 담을 상태 추가
+  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
     const fetchPass = async () => {
       setLoading(true);
       try {
-        // 💡 주의: 발급 API는 recommendationProductId 파라미터가 필요합니다. 
-        // 이전 페이지(진단 등)에서 넘어온 상품 ID가 있다면 넣어주어야 합니다.
-        const recommendationProductId = 1; // 예시 ID (실제 전달받은 ID로 변경 필요)
+        const recommendationProductId = location.state?.recommendationProductId;
         
+        if (!recommendationProductId) {
+          console.error("recommendationProductId가 존재하지 않습니다.");
+          alert("잘못된 접근입니다. 다시 시도해주세요.");
+          navigate('/');
+          return;
+        }
+
+        console.log("🚀 새로운 Visit Pass 생성을 요청합니다. 상품 ID:", recommendationProductId);
+
         const response = await createVisitPass(recommendationProductId);
+        console.log("🔥 새로 생성된 Pass 응답:", response);
         setUserData(response);
       } catch (error) {
-        console.error("Visit Pass 발급 실패:", error);
+        console.error("Visit Pass 생성 실패:", error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchPass();
-  }, []);
+  }, [location.state, navigate]);
+
+  // 화면에 렌더링할 데이터 추출
+  const passInfo = (() => {
+    if (!userData?.result) return null;
+    if (Array.isArray(userData.result.visitPasses)) {
+      return userData.result.visitPasses[0];
+    }
+    return userData.result;
+  })();
 
   return (
     <div
       className="visit-pass-container"
       style={{
-        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(${bgImage})`,
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${bgImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'
@@ -54,19 +72,22 @@ const VisitPassView = () => {
 
       <div className="visit-pass-content">
         <h2 className="pass-ready-title">YOUR VISIT PASS IS READY.</h2>
-        
+
         <div className="ticket-img-wrapper">
           <img src={ticketImg} alt="MCM VISIT PASS" />
 
+          {/* QR 코드 영역 */}
           <div className="qr-code-overlay">
             {loading ? (
-              <span style={{ fontSize: '11px', color: '#666' }}>생성 중...</span>
-            ) : (
+              <span style={{ fontSize: '12px', color: '#666', fontWeight: '500' }}>발급 중...</span>
+            ) : passInfo?.qrImageUrl ? (
               <img
-                src={userData?.result?.qrImageUrl} // result를 거치도록 수정
+                src={passInfo.qrImageUrl} 
                 alt="Visit Pass QR Code"
                 style={{ width: '100%', height: '100%', objectFit: 'contain' }}
               />
+            ) : (
+              <span style={{ fontSize: '11px', color: '#999' }}>정보 없음</span>
             )}
           </div>
         </div>
