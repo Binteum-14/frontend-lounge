@@ -1715,7 +1715,6 @@ function Route() {
                 </div>
             )}
 
-            {/* MCM 지갑 */}
             <button
                 type="button"
                 className={
@@ -1737,8 +1736,6 @@ function Route() {
                     alt="MCM Bag"
                 />
             </button>
-
-            {/* 주문 전 점선 물병 */}
             {!selectedDrink && (
                 <button
                     type="button"
@@ -1759,7 +1756,6 @@ function Route() {
                 </button>
             )}
 
-            {/* 주문 후 음료 */}
             {selectedDrink && (
                 <button
                     type="button"
