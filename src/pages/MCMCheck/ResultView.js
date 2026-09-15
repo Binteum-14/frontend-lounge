@@ -9,6 +9,7 @@ const ResultView = ({ onGoToLounge, surveyAnswers }) => {
   const navigate = useNavigate(); 
 
   const [diagnosisResult, setDiagnosisResult] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null); 
   const [dotCount, setDotCount] = useState(1);
 
   useEffect(() => {
@@ -52,6 +53,9 @@ const ResultView = ({ onGoToLounge, surveyAnswers }) => {
         
         if (response.isSuccess) {
           setDiagnosisResult(response.result); 
+          if (response.result?.products && response.result.products.length > 0) {
+            setSelectedProduct(response.result.products[0]);
+          }
         }
       } catch (error) {
         console.error("진단 결과를 불러오는 데 실패했습니다.", error);
@@ -63,7 +67,7 @@ const ResultView = ({ onGoToLounge, surveyAnswers }) => {
     }
   }, [surveyAnswers]);
 
-  const topProduct = diagnosisResult?.products?.[0];
+  const topProduct = selectedProduct || diagnosisResult?.products?.[0];
 
   const handleGoToBagDetail = () => {
     navigate('/bag-detail', { 
@@ -71,17 +75,17 @@ const ResultView = ({ onGoToLounge, surveyAnswers }) => {
     });
   };
 
-  
   const handleGoToVisitPass = () => {
-    const targetId = diagnosisResult?.recommendationId || diagnosisResult?.id;
+    // 🌟 방어적 코드를 줄이고 진짜 recommendationProductId를 바로 타겟팅
+    const targetId = topProduct?.recommendationProductId;
 
-    if (!diagnosisResult || !targetId) {
-      alert("진단 결과 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+    if (!topProduct || !targetId) {
+      alert("추천 상품 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
       return;
     }
 
     navigate('/visit-pass', { 
-      state: { recommendationId: targetId } 
+      state: { recommendationProductId: targetId } 
     });
   };
 
