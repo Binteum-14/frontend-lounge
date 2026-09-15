@@ -13,6 +13,10 @@ const VisitPassView = () => {
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState(null);
 
+  // 🌟 전달받은 가방 이름과 이미지 추출
+  const productTitle = location.state?.productTitle;
+  const productImage = location.state?.productImage;
+
   useEffect(() => {
     const fetchPass = async () => {
       setLoading(true);
@@ -75,6 +79,18 @@ const VisitPassView = () => {
 
         <div className="ticket-img-wrapper">
           <img src={ticketImg} alt="MCM VISIT PASS" />
+
+          {/* 🌟 QR 코드 왼쪽 빈칸 영역에 가방 사진과 이름 표시 */}
+          <div className="pass-product-info-overlay">
+            {productImage && (
+              <div className="pass-bag-img-box">
+                <img src={productImage} alt={productTitle || "Selected Bag"} />
+              </div>
+            )}
+            <div className="pass-bag-title-box">
+              <span>{productTitle || "MCM Recommended Bag"}</span>
+            </div>
+          </div>
 
           {/* QR 코드 영역 */}
           <div className="qr-code-overlay">

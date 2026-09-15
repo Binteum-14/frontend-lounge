@@ -71,8 +71,13 @@ const BagDetailView = () => {
       return;
     }
 
+    // 🌟 가방 이름과 이미지를 함께 넘기도록 수정
     navigate('/visit-pass', { 
-      state: { recommendationProductId: currentProduct.id } 
+      state: { 
+        recommendationProductId: currentProduct.id,
+        productTitle: currentProduct.title,
+        productImage: currentProduct.image
+      } 
     });
   };
 

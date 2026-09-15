@@ -10,7 +10,7 @@ import { logoutUser, withdrawUser, getUsername, getVisitPasses, getFocusPasses }
 function PassportModal({ isOpen, onClose }) {
   const [selectedTicketData, setSelectedTicketData] = useState(null);
   const [username, setUsername] = useState('사용자');
-  const [issuedDate, setIssuedDate] = useState('2026.08.03'); 
+  const [visitPasses, setVisitPassesState] = useState([]); 
   const [studyCards, setStudyCards] = useState([]);
   
   const qrImageUrl = "https://mcm-focus-lounge-visitpass-qr.s3.ap-northeast-2.amazonaws.com/visit-pass/qr/82ca68e6-0f41-4cbe-abd6-c3f33e81af49.png";
@@ -25,12 +25,19 @@ function PassportModal({ isOpen, onClose }) {
         }
 
         const passResponse = await getVisitPasses();
-        const passes = passResponse?.result?.visitPasses;
-        if (passes && passes.length > 0) {
-          const rawDate = passes[0].diagnosedAt; 
-          if (rawDate) {
-            setIssuedDate(rawDate.replace(/-/g, '.'));
-          }
+        console.log("Visit Pass 응답 확인:", passResponse);
+        const passes = passResponse?.result?.visitPasses || passResponse?.result;
+        
+        if (passes && Array.isArray(passes) && passes.length > 0) {
+          const formattedPasses = passes.map(pass => {
+            const rawDate = pass.diagnosedAt || pass.createdAt;
+            return {
+              id: pass.visitPassId || pass.id,
+              issuedDate: rawDate ? rawDate.split('T')[0].replace(/-/g, '.') : '2026.08.03',
+              qrUrl: pass.qrImageUrl || qrImageUrl
+            };
+          });
+          setVisitPassesState(formattedPasses);
         }
 
         const focusResponse = await getFocusPasses(null, 10);
@@ -70,6 +77,7 @@ function PassportModal({ isOpen, onClose }) {
 
       setUsername('사용자');
       setStudyCards([]);
+      setVisitPassesState([]);
 
       alert("로그아웃되었습니다.");
       onClose();
@@ -93,14 +101,14 @@ function PassportModal({ isOpen, onClose }) {
     }
   };
 
-  const handleVisitPassClick = () => {
+  const handleVisitPassClick = (pass) => {
     setSelectedTicketData({
       bgUrl: visitPassBg,
       downloadName: 'MCM_Visit_Pass.png',
-      qrData: qrImageUrl, 
+      qrData: pass.qrUrl, 
       fields: [
         { label: 'Passenger', value: username, className: 'passenger-field' },
-        { label: 'Issued', value: issuedDate, className: 'issued-field' },
+        { label: 'Issued', value: pass.issuedDate, className: 'issued-field' },
       ]
     });
   };
@@ -149,27 +157,60 @@ function PassportModal({ isOpen, onClose }) {
 
           <h3 className="visit-pass-title">MY VISIT PASS</h3>
 
-          <div
-            className="img-ticket-card clickable"
-            style={{ backgroundImage: `url(${visitPassBg})` }}
-            onClick={handleVisitPassClick}
+          {/* 스크롤 가능한 컨테이너 */}
+          <div 
+            style={{
+              maxHeight: '380px',
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '15px',
+              paddingRight: '5px'
+            }}
           >
-            <div className="ticket-overlay-field passenger-field">
-              <span className="ticket-label">Passenger</span>
-              <span className="ticket-val">{username}</span>
-            </div>
+            {visitPasses.length > 0 ? (
+              visitPasses.map((pass) => (
+                <div
+                  key={pass.id}
+                  onClick={() => handleVisitPassClick(pass)}
+                  style={{ 
+                    backgroundImage: `url(${visitPassBg})`, 
+                    width: '100%',
+                    height: '130px', 
+                    backgroundSize: '100% 100%',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'center',
+                    flexShrink: 0,
+                    cursor: 'pointer',
+                    position: 'relative',
+                    borderRadius: '8px'
+                  }}
+                >
+                  <div className="ticket-overlay-field passenger-field">
+                    <span className="ticket-label">Passenger</span>
+                    <span className="ticket-val">{username}</span>
+                  </div>
 
-            <div className="ticket-overlay-field issued-field">
-              <span className="ticket-label">Issued</span>
-              <span className="ticket-val">{issuedDate}</span>
-            </div>
+                  <div className="ticket-overlay-field issued-field">
+                    <span className="ticket-label">Issued</span>
+                    <span className="ticket-val">{pass.issuedDate}</span>
+                  </div>
 
-            <div className="ticket-overlay-qr">
-              <img
-                src={qrImageUrl}
-                alt="Visit Pass QR Code"
-              />
-            </div>
+                  <div className="ticket-overlay-qr"
+                  style={{ transform: 'translateX(-13px) translateY(-18px)' }}>
+                    <img
+                      src={pass.qrUrl}
+                      alt="Visit Pass QR Code"
+                      style={{ width: '45px', height: '45px', objectFit: 'contain' }}
+                    />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{ fontSize: '13px', color: '#666', textAlign: 'center', padding: '20px 0' }}>
+                발급된 Visit Pass가 없습니다.
+              </div>
+            )}
           </div>
         </div>
 
