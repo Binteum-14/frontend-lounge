@@ -25,24 +25,43 @@ function PassportModal({ isOpen, onClose }) {
         }
 
         const passResponse = await getVisitPasses();
-        console.log("Visit Pass 응답 확인:", passResponse);
         const passes = passResponse?.result?.visitPasses || passResponse?.result;
         
         if (passes && Array.isArray(passes) && passes.length > 0) {
-          const formattedPasses = passes.map(pass => {
+          const formattedPasses = passes.map((pass) => {
             const rawDate = pass.diagnosedAt || pass.createdAt;
+            const passId = pass.visitPassId || pass.id;
+            
+            // 🌟 1순위: 오직 이 패스 고유 ID에 매칭된 데이터만 확인
+            let cachedImage = localStorage.getItem(`pass_image_${passId}`);
+            let cachedTitle = localStorage.getItem(`pass_title_${passId}`);
+
+            // 🌟 2순위: 고유 ID 매칭 값이 없다면 히스토리 배열에서 해당 passId 기록 탐색
+            if (!cachedImage) {
+              try {
+                const history = JSON.parse(localStorage.getItem('passBagHistory') || '[]');
+                const matched = history.find(h => h.passId === passId);
+                if (matched) {
+                  cachedImage = matched.productImage;
+                  cachedTitle = matched.productTitle;
+                }
+              } catch (e) {
+                console.error(e);
+              }
+            }
+
             return {
-              id: pass.visitPassId || pass.id,
-              issuedDate: rawDate ? rawDate.split('T')[0].replace(/-/g, '.') : '2026.08.03',
-              qrUrl: pass.qrImageUrl || qrImageUrl
+              id: passId,
+              issuedDate: rawDate ? rawDate.split('T')[0].replace(/-/g, '.') : '2026.09.15',
+              qrUrl: pass.qrImageUrl || qrImageUrl,
+              bagName: cachedTitle || pass.bagName || pass.itemName || pass.name || 'MCM Bag',
+              bagImageUrl: pass.bagImageUrl || pass.productImage || pass.imageUrl || pass.bagImage || cachedImage || null
             };
           });
           setVisitPassesState(formattedPasses);
         }
 
         const focusResponse = await getFocusPasses(null, 10);
-        console.log("포커스 패스 응답 확인:", focusResponse);
-        
         const items = focusResponse?.result?.items;
         if (items && items.length > 0) {
           const formattedCards = items.map(item => ({
@@ -74,11 +93,9 @@ function PassportModal({ isOpen, onClose }) {
     } finally {
       localStorage.removeItem('accessToken');
       localStorage.clear();
-
       setUsername('사용자');
       setStudyCards([]);
       setVisitPassesState([]);
-
       alert("로그아웃되었습니다.");
       onClose();
       window.location.href = "/"; 
@@ -91,7 +108,6 @@ function PassportModal({ isOpen, onClose }) {
         await withdrawUser();
         localStorage.removeItem('accessToken');
         localStorage.clear();
-
         alert("회원 탈퇴가 완료되었습니다.");
         window.location.href = "/";
       } catch (error) {
@@ -106,8 +122,10 @@ function PassportModal({ isOpen, onClose }) {
       bgUrl: visitPassBg,
       downloadName: 'MCM_Visit_Pass.png',
       qrData: pass.qrUrl, 
+      // 🌟 상세 모달로 가방 이미지 데이터를 안전하게 전달
+      bagImageUrl: pass.bagImageUrl || pass.productImage || pass.imageUrl || pass.bagImage,
       fields: [
-        { label: 'Passenger', value: username, className: 'passenger-field' },
+        { label: 'Bag', value: pass.bagName, className: 'passenger-field' },
         { label: 'Issued', value: pass.issuedDate, className: 'issued-field' },
       ]
     });
@@ -186,9 +204,33 @@ function PassportModal({ isOpen, onClose }) {
                     borderRadius: '8px'
                   }}
                 >
-                  <div className="ticket-overlay-field passenger-field">
-                    <span className="ticket-label">Passenger</span>
-                    <span className="ticket-val">{username}</span>
+                  {/* 가방 이미지와 이름 영역 (left 조절 가능) */}
+                  <div 
+                    style={{ 
+                      position: 'absolute', 
+                      top: '25px', 
+                      left: '175px', 
+                      transform: 'translateX(-50%)',
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center', 
+                      gap: '4px',
+                      textAlign: 'center',
+                      width: '130px'
+                    }}
+                  >
+                    {pass.bagImageUrl && (
+                      <div style={{ width: '45px', height: '45px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <img 
+                          src={pass.bagImageUrl} 
+                          alt={pass.bagName} 
+                          style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} 
+                        />
+                      </div>
+                    )}
+                    <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#333', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
+                      {pass.bagName}
+                    </span>
                   </div>
 
                   <div className="ticket-overlay-field issued-field">
@@ -197,11 +239,11 @@ function PassportModal({ isOpen, onClose }) {
                   </div>
 
                   <div className="ticket-overlay-qr"
-                  style={{ transform: 'translateX(-13px) translateY(-18px)' }}>
+                  style={{ transform: 'translateX(-4px) translateY(-30px)' }}>
                     <img
                       src={pass.qrUrl}
                       alt="Visit Pass QR Code"
-                      style={{ width: '45px', height: '45px', objectFit: 'contain' }}
+                      style={{ width: '65px', height: '65px', objectFit: 'contain' }}
                     />
                   </div>
                 </div>
