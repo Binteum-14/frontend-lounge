@@ -35,6 +35,40 @@ const VisitPassView = () => {
         const response = await createVisitPass(recommendationProductId);
         console.log("🔥 새로 생성된 Pass 응답:", response);
         setUserData(response);
+
+        // 🌟 [추가 포인트] 패스가 성공적으로 생성/조회될 때 해당 가방 이미지와 이름을 로컬스토리지에 저장
+        const passInfo = (() => {
+          if (!response?.result) return null;
+          if (Array.isArray(response.result.visitPasses)) {
+            return response.result.visitPasses[0];
+          }
+          return response.result;
+        })();
+
+        const passId = passInfo?.visitPassId || passInfo?.id;
+        if (passId) {
+          if (productImage) {
+            localStorage.setItem(`pass_image_${passId}`, productImage);
+            localStorage.setItem('lastProductImage', productImage);
+          }
+          if (productTitle) {
+            localStorage.setItem(`pass_title_${passId}`, productTitle);
+            localStorage.setItem('lastProductTitle', productTitle);
+          }
+
+          // 🌟 추가: 전체 발급 내역 배열(History)에도 누적 저장하여 과거 패스들까지 커버
+          try {
+            const existingHistory = JSON.parse(localStorage.getItem('passBagHistory') || '[]');
+            const isAlreadyExist = existingHistory.some(item => item.passId === passId);
+            if (!isAlreadyExist && productImage) {
+              existingHistory.unshift({ passId, productImage, productTitle }); // 최신 것이 맨 앞
+              localStorage.setItem('passBagHistory', JSON.stringify(existingHistory));
+            }
+          } catch (e) {
+            console.error("History 저장 에러", e);
+          }
+        }
+
       } catch (error) {
         console.error("Visit Pass 생성 실패:", error);
       } finally {
@@ -43,7 +77,7 @@ const VisitPassView = () => {
     };
 
     fetchPass();
-  }, [location.state, navigate]);
+  }, [location.state, navigate, productImage, productTitle]);
 
   // 화면에 렌더링할 데이터 추출
   const passInfo = (() => {
