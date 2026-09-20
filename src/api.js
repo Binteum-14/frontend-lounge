@@ -645,4 +645,15 @@ export const loginUser = async (username, password) => {
   }
 };
 
+// 회원가입 API 함수 추가
+export const signupUser = async (username, password) => {
+  try {
+    const response = await post('/api/auth/signup', { username, password });
+    return response;
+  } catch (error) {
+    console.error("회원가입 실패:", error);
+    throw error;
+  }
+};
+
 export default api;
