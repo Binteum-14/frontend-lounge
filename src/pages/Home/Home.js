@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logoImg from "../../assets/images/MCMCheckLogo.png";
-import { loginUser } from "../../api";
+import { loginUser, signupUser } from "../../api"; // 🌟 signupUser 추가
 import { Cookies } from "react-cookie";
 
 import "./Home.css";
@@ -25,8 +25,7 @@ function Home() {
   // true면 회원가입 뷰, false면 로그인 뷰
   const [isSignup, setIsSignup] = useState(false);
 
-  // 🌟 [수정 포인트] 로컬스토리지와 실제 쿠키 토큰이 모두 존재할 때만 true로 인정하고,
-  // 찌꺼기만 남아있다면 스스로 정리하여 '로그인' 버튼이 먼저 뜨도록 보정합니다.
+  // 🌟 로컬스토리지와 실제 쿠키 토큰이 모두 존재할 때만 true로 인정
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     const hasStorage = localStorage.getItem("isLoggedIn") === "true";
     const hasCookieToken = !!cookies.get("accessToken");
@@ -86,15 +85,29 @@ function Home() {
     alert("로그아웃 되었습니다.");
   };
 
-  // 회원가입 제출 핸들러
-  const handleSignupSubmit = (e) => {
+  // 회원가입 제출 핸들러 (🌟 실제 API 연동으로 수정)
+  const handleSignupSubmit = async (e) => {
     e.preventDefault();
+    
     if (formData.password !== formData.confirmPassword) {
       alert("비밀번호가 일치하지 않습니다.");
       return;
     }
-    console.log("회원가입 시도:", formData.username, formData.password);
-    alert("회원가입 시도중...");
+
+    try {
+      const response = await signupUser(formData.username, formData.password);
+
+      if (response.isSuccess) {
+        alert("회원가입에 성공했습니다! 로그인해 주세요.");
+        setIsSignup(false); // 로그인 뷰로 전환
+        setFormData({ username: "", password: "", confirmPassword: "" });
+      } else {
+        alert(`회원가입 실패: ${response.message || "아이디 또는 비밀번호를 확인해주세요."}`);
+      }
+    } catch (error) {
+      console.error("회원가입 에러:", error);
+      alert("서버와 통신 중 문제가 발생했습니다.");
+    }
   };
 
   /* =========================================
@@ -111,7 +124,6 @@ function Home() {
     setIsSignup(false);
   };
 
-  // Focus Lounge는 로그인 체크 없이 바로 이동
   const handleGoToFocusLounge = () => {
     navigate("/focus-lounge");
   };
